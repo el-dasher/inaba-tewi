@@ -1,7 +1,7 @@
 from os import getenv
 
-_private_key: str = getenv('firebase_private_key')
-_client_email: str = getenv('firebase_client_email')
+_private_key: str = getenv('FIREBASE_PRIVATE_KEY')
+_client_email: str = getenv('FIREBASE_CLIENT_EMAIL')
 
 FIREBASE_CONFIG = {
     "type": "service_account",
