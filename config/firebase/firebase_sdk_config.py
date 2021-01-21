@@ -1,6 +1,6 @@
 from os import getenv
 
-_private_key: str = getenv('FIREBASE_PRIVATE_KEY')
+_private_key: str = getenv('FIREBASE_PRIVATE_KEY').replace('\\n', '\n')
 _client_email: str = getenv('FIREBASE_CLIENT_EMAIL')
 
 FIREBASE_CONFIG = {
