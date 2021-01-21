@@ -1,0 +1,4 @@
+discord>=1.0.1
+python-dotenv>=0.15.0
+aiohttp>=3.7.3
+beautifulsoup4>=4.9.3
