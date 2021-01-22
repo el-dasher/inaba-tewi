@@ -2,7 +2,7 @@ from typing import Union
 
 import aiohttp
 
-from helpers.osu.oppadc import oppadc
+import oppadc
 
 
 class OsuDroidBeatmapData(oppadc.OsuMap):

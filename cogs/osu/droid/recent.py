@@ -2,12 +2,12 @@ from datetime import datetime
 from typing import Union
 
 import discord
-from helpers.osu.aioosuapi import Beatmap
+from aioosuapi import Beatmap
 from discord.ext import commands
 
 from helpers.osu.droid.beatmaps.calculator import new_osu_droid_play_bpp, OsuDroidBeatmapData
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay
-from helpers.osu.oppadc.oppadc.osumap import OsuStats
+from oppadc.osumap import OsuStats
 from utils.osu_droid_utils import default_search_for_user_in_db_handling, default_user_exists_check
 from utils.osuapi import OSU_PPY_API
 
