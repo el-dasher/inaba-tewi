@@ -5,7 +5,7 @@ from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
 from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
-from utils.database import users_collection
+from utils.database import binded_collection
 
 
 def default_total_dpp(osu_droid_user: OsuDroidProfile) -> Union[str, None]:
@@ -35,7 +35,7 @@ async def default_user_exists_check(ctx: commands.Context, osu_droid_user: OsuDr
     return user_exists
 
 
-async def default_search_for_user_in_db_handling(ctx: commands.Context, uid: Union[discord.Member, int] = None):
+async def default_search_for_uid_in_db_handling(ctx: commands.Context, uid: Union[discord.Member, int] = None):
     """
     :param ctx: The discord Context to the bot reply to.
     :param uid: The uid to search in the database:
@@ -48,10 +48,10 @@ async def default_search_for_user_in_db_handling(ctx: commands.Context, uid: Uni
 
     if not uid:
         user_to_search_in_db = ctx.author
-        droid_user_id = (await get_droid_user_in_db(user_to_search_in_db))['uid']
+        droid_user_id = (await get_droid_user_id_in_db(user_to_search_in_db))['uid']
     else:
         if isinstance(user_to_search_in_db, discord.Member):
-            response_from_db = (await get_droid_user_in_db(user_to_search_in_db))
+            response_from_db = (await get_droid_user_id_in_db(user_to_search_in_db))
 
             if response_from_db['in_db']:
                 droid_user_id = response_from_db['uid']
@@ -63,13 +63,13 @@ async def default_search_for_user_in_db_handling(ctx: commands.Context, uid: Uni
     return droid_user_id
 
 
-async def get_droid_user_in_db(discord_user: discord.Member) -> dict[str, int, bool, None]:
+async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int, bool, None]:
     """
     :param discord_user: A discord user to get from the db
     :return: The user's osu!droid uid
     """
 
-    current_binded_users: dict = users_collection.get().to_dict()
+    current_binded_users: dict = binded_collection.get().to_dict()
     user_in_db: bool = False
     getted_user: Union[int, None] = None
 

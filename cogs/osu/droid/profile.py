@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile
-from utils.osu_droid_utils import default_total_dpp, default_search_for_user_in_db_handling, default_user_exists_check
+from utils.osu_droid_utils import default_total_dpp, default_search_for_uid_in_db_handling, default_user_exists_check
 
 
 class Profile(commands.Cog):
@@ -16,7 +16,7 @@ class Profile(commands.Cog):
     async def profile(
             self, ctx: commands.Context, uid: Union[discord.Member, int] = None
     ) -> Union[discord.Message, None]:
-        droid_user_id: Union[int, None] = await default_search_for_user_in_db_handling(ctx=ctx, uid=uid)
+        droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
 
         osu_droid_user: new_osu_droid_profile = await new_osu_droid_profile(
             droid_user_id, needs_player_html=True, needs_pp_data=True
@@ -47,7 +47,7 @@ class Profile(commands.Cog):
                   f"Total score: {osu_droid_user.total_score:,}  \n"
                   f"Total DPP: {droid_user_total_dpp}            \n"
                   f"Overall acc: {osu_droid_user.accuracy}%      \n"
-                  f"Playcount: {osu_droid_user.total_playcount}  \n"
+                  f"Playcount: {osu_droid_user.play_count}  \n"
                   "**".strip()
         )
 

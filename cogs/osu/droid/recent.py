@@ -4,11 +4,11 @@ from typing import Union
 import discord
 from aioosuapi import Beatmap
 from discord.ext import commands
+from oppadc.osumap import OsuStats
 
 from helpers.osu.droid.beatmaps.calculator import new_osu_droid_play_bpp, OsuDroidBeatmapData
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay
-from oppadc.osumap import OsuStats
-from utils.osu_droid_utils import default_search_for_user_in_db_handling, default_user_exists_check
+from utils.osu_droid_utils import default_search_for_uid_in_db_handling, default_user_exists_check
 from utils.osuapi import OSU_PPY_API
 
 
@@ -20,7 +20,7 @@ class Recent(commands.Cog):
     async def recent(
             self, ctx: commands.Context, uid: Union[discord.Member, int] = None
     ) -> Union[discord.Message, None]:
-        droid_user_id: Union[int, None] = await default_search_for_user_in_db_handling(ctx=ctx, uid=uid)
+        droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
 
         osu_droid_user: new_osu_droid_profile = await new_osu_droid_profile(
             droid_user_id, needs_player_html=True, needs_pp_data=True

@@ -35,6 +35,15 @@ class OsuDroidProfile:
         self.pp_board_is_offline = True
         self.in_pp_database: Union[bool, None] = None
 
+        self._total_score: Union[int, None] = None
+        self._accuracy: Union[float, None] = None
+        self._play_count: Union[int, None] = None
+        self._username: Union[str, None] = None
+        self._rank_score: Union[int, None] = None
+        self._avatar: Union[str, None] = None
+        self._country: Union[str, None] = None
+        self._recent_play: Union[OsuDroidPlay, None] = None
+
     async def setup(self) -> dict:
         async with aiohttp.ClientSession() as session:
             if self.needs_player_html:
@@ -89,50 +98,64 @@ class OsuDroidProfile:
     def total_score(self) -> int:
         self._player_html_required()
 
-        total_score: int = int(self._stats[0].replace(',', ''))
-        return total_score
+        if not self._total_score:
+            self._total_score = int(self._stats[0].replace(',', ''))
+
+        return self._total_score
 
     @property
     def accuracy(self) -> float:
         self._player_html_required()
 
-        accuracy: float = float(self._stats[1][:-1])
-        return accuracy
+        if not self._accuracy:
+            self._accuracy = float(self._stats[1][:-1])
+
+        return self._accuracy
 
     @property
-    def total_playcount(self) -> int:
+    def play_count(self) -> int:
         self._player_html_required()
 
-        playcount: int = int(self._stats[2])
-        return playcount
+        if not self._play_count:
+            self._play_count = int(self._stats[2])
+
+        return self._play_count
 
     @property
     def username(self) -> str:
         self._player_html_required()
 
-        username: str = self._player_html.find("div", class_="h3 m-t-xs m-b-xs").text
-        return username
+        if not self._username:
+            self._username = self._player_html.find("div", class_="h3 m-t-xs m-b-xs").text
+
+        return self._username
 
     @property
     def rank_score(self) -> str:
         self._player_html_required()
 
-        rank_score: str = self._player_html.find("span", class_="m-b-xs h4 block").text
-        return rank_score
+        if not self._rank_score:
+            self._rank_score = self._player_html.find("span", class_="m-b-xs h4 block").text
+
+        return self._rank_score
 
     @property
     def avatar(self) -> str:
         self._player_html_required()
 
-        avatar: str = self._player_html.find("a", class_="thumb-lg").find("img")['src']
-        return avatar
+        if not self._avatar:
+            self._avatar = self._player_html.find("a", class_="thumb-lg").find("img")['src']
+
+        return self._avatar
 
     @property
     def country(self) -> str:
         self._player_html_required()
 
-        country: str = self._player_html.find("small", class_="text-muted").text
-        return country
+        if not self._country:
+            self._country = self._player_html.find("small", class_="text-muted").text
+
+        return self._country
 
     @property
     def pp_data(self) -> dict:
@@ -160,10 +183,11 @@ class OsuDroidProfile:
     def recent_play(self):
         self._player_html_required()
 
-        play_html: Union[Tag, NavigableString] = self._player_html.find("li", class_="list-group-item")
-        recent_play = self._get_play_data(play_html)
+        if not self._recent_play:
+            play_html: Union[Tag, NavigableString] = self._player_html.find("li", class_="list-group-item")
+            self._recent_play = self._get_play_data(play_html)
 
-        return recent_play
+        return self._recent_play
 
     @property
     def exists(self) -> bool:
