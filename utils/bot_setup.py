@@ -1,6 +1,6 @@
 from utils.env_setup import setup_env
 
-DEBUG: bool = True
+DEBUG: bool = False
 setup_env()
 
 DEFAULT_BOT_PREFIXES: tuple

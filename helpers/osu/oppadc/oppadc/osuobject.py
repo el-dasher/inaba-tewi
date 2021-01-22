@@ -26,7 +26,7 @@ class OsuHitObject(object):
         return self.__repr__()
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} {self.starttime}ms Pos={self.Pos} NormPos={self.NormPos} strains={self.strains} is_single={str(self.is_single)}>"
+        return f"<{self.__class__.__name__} {self.starttime}ms Pos={self.Pos} NormPos={self.NormPos} strains={self.strains} is_single={self.is_single}>"
 
 
 class OsuHitObjectCircle(OsuHitObject):

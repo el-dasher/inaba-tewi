@@ -19,7 +19,7 @@ class UserBind(commands.Cog):
     ) -> discord.Message:
         if await default_user_exists_check(ctx, osu_droid_user_):
             bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
-            users_collection.set({str(member_to_bind.id): osu_droid_user_.uid}, merge=True)
+            users_collection.set({f"{member_to_bind.id}": osu_droid_user_.uid}, merge=True)
 
             return await ctx.reply(ctx.author.mention, embed=bind_embed)
 
