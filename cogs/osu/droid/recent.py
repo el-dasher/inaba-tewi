@@ -6,7 +6,7 @@ from aioosuapi import Beatmap
 from discord.ext import commands
 from oppadc.osumap import OsuStats
 
-from helpers.osu.droid.beatmaps.calculator import new_osu_droid_play_bpp, OsuDroidBeatmapData
+from helpers.osu.beatmaps.calculator import new_osu_droid_play_bpp, OsuDroidBeatmapData
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay
 from utils.osu_droid_utils import default_search_for_uid_in_db_handling, default_user_exists_check
 from utils.osuapi import OSU_PPY_API
@@ -30,27 +30,30 @@ class Recent(commands.Cog):
             return None
 
         recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
-        droid_user_username: str = osu_droid_user.username
 
         recent_play: OsuDroidPlay = osu_droid_user.recent_play
-        recent_beatmap_id: Beatmap = (await OSU_PPY_API.get_beatmap(h=recent_play.hash)).beatmap_id
+        recent_beatmap: Beatmap = (await OSU_PPY_API.get_beatmap(h=recent_play.hash))
 
         # Play data adjusted to osu!droid values, e.g: nerfs, bpp
         bumped_play: OsuDroidBeatmapData = await new_osu_droid_play_bpp(
-            recent_beatmap_id, recent_play.mods, recent_play.misses, recent_play.accuracy, recent_play.max_combo
+            recent_beatmap.beatmap_id, recent_play.mods, recent_play.misses,
+            recent_play.accuracy, recent_play.max_combo, adjust_to_droid=True, beatmap_data_from_osu_api=recent_beatmap
         )
 
         play_stats: OsuStats = bumped_play.getStats(Mods=recent_play.mods)
         play_diff: float = play_stats.total
 
         recent_embed.set_author(
-            url=osu_droid_user.main_profile_url, name=f"{recent_play.title} {recent_play.mods} - {play_diff:.2f}★"
+            url=osu_droid_user.main_profile_url,
+            name=f"{recent_play.title} {recent_play.mods} - {play_diff:.2f}★",
+            icon_url=osu_droid_user.avatar
         )
 
-        recent_embed.set_thumbnail(url=osu_droid_user.avatar)
+        recent_embed.set_thumbnail(url=recent_beatmap.thumbnail)
         recent_embed.set_footer(text="\u200b", icon_url=recent_play.rank_url)
+
         recent_embed.add_field(
-            name=f"Dados da play do(a) {droid_user_username}",
+            name=f"Dados da play do(a) {osu_droid_user.username}",
             value=">>> "
                   "**"
                   f"BR_DPP: {bumped_play.raw_pp:.2f}                           \n"
@@ -58,6 +61,16 @@ class Recent(commands.Cog):
                   f"Score: {recent_play.score:,}                               \n"
                   f"Combo: {recent_play.max_combo} / {bumped_play.maxCombo()}  \n"
                   f"Misses: {recent_play.misses}                               \n"
+                  "**".strip()
+        )
+
+        recent_embed.add_field(
+            name=f"Infos do beatmap",
+            value=">>> "
+                  "**"
+                  f"CS/OD: {bumped_play.base_cs} / {bumped_play.base_od}  \n"
+                  f"AR/HP: {bumped_play.base_ar} / {bumped_play.base_hp}  \n"
+                  f"BPM: {bumped_play.bpm}                                \n"
                   "**".strip()
         )
 
