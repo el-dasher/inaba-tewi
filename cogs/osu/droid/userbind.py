@@ -25,6 +25,7 @@ class UserBind(commands.Cog):
                 {
                     f"{osu_droid_user_.uid}": {
                         "username": osu_droid_user_.username,
+                        "rank_score": osu_droid_user_.rank_score,
                         "total_score": osu_droid_user_.total_score,
                         "accuracy": osu_droid_user_.accuracy,
                         "play_count": osu_droid_user_.play_count,
@@ -58,10 +59,11 @@ class UserBind(commands.Cog):
             name=f"Informações do(a) {droid_username}",
             value=f">>> "
                   f"**"
-                  f"Rank: #{osu_droid_user_.rank_score}        \n"
-                  f"Score: {osu_droid_user_.total_score:,}     \n"
-                  f"Total DPP: {droid_user_total_dpp}          \n"
-                  f"Accuracy: {osu_droid_user_.accuracy}%      \n"
+                  f"Rank: #{osu_droid_user_.rank_score}           \n"
+                  f"Total score: {osu_droid_user_.total_score:,}  \n"
+                  f"Total DPP: {droid_user_total_dpp}             \n"
+                  f"Overall acc: {osu_droid_user_.accuracy}%      \n"
+                  f"Playcount: {osu_droid_user_.play_count}       \n"
                   f"**"
         )
 

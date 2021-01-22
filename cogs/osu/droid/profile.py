@@ -42,12 +42,12 @@ class Profile(commands.Cog):
             name="---Informações ",
             value=">>> "
                   "**"
-                  f"{droid_user_nationality_string}                "
+                  f"{droid_user_nationality_string}"
                   f"Rank: #{osu_droid_user.rank_score}           \n"
                   f"Total score: {osu_droid_user.total_score:,}  \n"
                   f"Total DPP: {droid_user_total_dpp}            \n"
                   f"Overall acc: {osu_droid_user.accuracy}%      \n"
-                  f"Playcount: {osu_droid_user.play_count}  \n"
+                  f"Playcount: {osu_droid_user.play_count}       \n"
                   "**".strip()
         )
 
