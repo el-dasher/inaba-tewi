@@ -7,7 +7,7 @@ DEFAULT_BOT_PREFIXES: tuple
 if DEBUG:
     DEFAULT_BOT_PREFIXES = ('d!',)
 else:
-    DEFAULT_BOT_PREFIXES = ('tewi!', 'awa!', 'd!')
+    DEFAULT_BOT_PREFIXES = ('tewi!', 'awa!')
 
 _RAW_COGS: tuple = ('osu.droid.userbind', 'osu.droid.profile', 'osu.droid.recent', 'handlers.error_handler')
 COGS: tuple = tuple(map(lambda cog_path: f'cogs.{cog_path}', _RAW_COGS))
