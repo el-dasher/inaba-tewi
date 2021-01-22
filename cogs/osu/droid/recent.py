@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Union
 
 import discord
-from aioosuapi import Beatmap
+from helpers.osu.aioosuapi import Beatmap
 from discord.ext import commands
 
 from helpers.osu.droid.beatmaps.calculator import new_osu_droid_play_bpp, OsuDroidBeatmapData
