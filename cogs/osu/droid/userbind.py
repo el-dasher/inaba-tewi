@@ -72,7 +72,7 @@ class UserBind(commands.Cog):
     @commands.command(name='userbind', aliases=('bindme', 'droidset', 'bind'))
     async def user_bind(self, ctx: commands.Context, uid: int = None) -> discord.Message:
         if not uid:
-            return await ctx.reply('❎ | Você esqueceu do ID do seu perfil :(')
+            return await ctx.reply('❎ **| Você esqueceu do ID do seu perfil...**')
 
         osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(uid, needs_player_html=True, needs_pp_data=True)
 
@@ -84,9 +84,9 @@ class UserBind(commands.Cog):
             self, ctx: commands.Context, member: discord.Member = None, uid: int = None
     ) -> discord.Message:
         if not member:
-            return await ctx.reply('❎ | Ei adm, você esqueceu do usúario que você quer bindar!')
+            return await ctx.reply('❎ **| Ei adm, você esqueceu do usúario que você quer bindar!**')
         if not uid:
-            return await ctx.reply('❎ | Ei adm, você esqueceu do id desse usúario no jogo!')
+            return await ctx.reply('❎ **| Ei adm, você esqueceu do id desse usúario no jogo!**')
 
         osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(uid, needs_player_html=True, needs_pp_data=True)
 

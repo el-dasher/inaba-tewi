@@ -59,8 +59,8 @@ class OsuDroidBeatmapData(oppadc.OsuMap):
         self.base_hp = calculated_diff.hp
 
     def _calculate_droid_stats(self):
-        self.od = 5 - (75 + 5 * (5 - self.od) - 50) / 6
-        self.cs -= 4
+        self.od = 5 - (75 + 5 * (5 - self.base_od) - 50) / 6
+        self.cs = self.base_cs - 4
 
         if "SC" in self.mods:
             self.cs += 4
@@ -82,6 +82,7 @@ class OsuDroidBeatmapData(oppadc.OsuMap):
         self.aim_pp = calculated_pp.aim_pp
         self.speed_pp = calculated_pp.speed_pp * self.speed_multiplier
         self.acc_pp = calculated_pp.speed_pp
+
 
     async def setup(self) -> None:
         async with aiohttp.ClientSession() as session:
