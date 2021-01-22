@@ -1,13 +1,14 @@
 from typing import Union
 
-from helpers.osu.droid.osu_droid_data import new_osu_droid_profile
 import discord
-from utils.database import users_collection
 from discord.ext import commands
+
+from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
 from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
+from utils.database import users_collection
 
 
-def default_total_dpp(osu_droid_user: new_osu_droid_profile) -> Union[str, None]:
+def default_total_dpp(osu_droid_user: OsuDroidProfile) -> Union[str, None]:
     """
     :param osu_droid_user: The user to get it's total_dpp
     :return: A formatted string of the user's total dpp and 'off' if rian8337's droidppboard API is offline
@@ -24,7 +25,7 @@ def default_total_dpp(osu_droid_user: new_osu_droid_profile) -> Union[str, None]
     return droid_user_total_dpp
 
 
-async def default_user_exists_check(ctx: commands.Context, osu_droid_user: new_osu_droid_profile) -> bool:
+async def default_user_exists_check(ctx: commands.Context, osu_droid_user: OsuDroidProfile) -> bool:
     user_exists: bool = False
     if osu_droid_user.exists:
         user_exists = True
@@ -62,7 +63,7 @@ async def default_search_for_user_in_db_handling(ctx: commands.Context, uid: Uni
     return droid_user_id
 
 
-async def get_droid_user_in_db(discord_user: discord.Member) -> Union[dict[str, int, bool, None]]:
+async def get_droid_user_in_db(discord_user: discord.Member) -> dict[str, int, bool, None]:
     """
     :param discord_user: A discord user to get from the db
     :return: The user's osu!droid uid

@@ -8,12 +8,12 @@ from bs4 import BeautifulSoup
 # noinspection PyProtectedMember
 from bs4 import Tag, NavigableString
 
-from .exceptions import MissingRequiredArgument
+from helpers.osu.droid.user_data.exceptions import MissingRequiredArgument
 
 _DPP_BOARD_API_KEY: str = getenv('DPP_BOARD_API_KEY')
 
 
-class _OsuDroidProfile:
+class OsuDroidProfile:
     def __init__(self, uid: int, needs_player_html: bool = False, needs_pp_data: bool = False):
         self.needs_player_html: bool = needs_player_html
         self.needs_pp_data: bool = needs_pp_data
@@ -83,7 +83,7 @@ class _OsuDroidProfile:
 
     @staticmethod
     def _get_play_data(play_html: Union[Tag, NavigableString]):
-        return _OsuDroidPlay(play_html)
+        return OsuDroidPlay(play_html)
 
     @property
     def total_score(self) -> int:
@@ -188,24 +188,60 @@ class _OsuDroidProfile:
     #   return recent_plays
 
 
-class _OsuDroidPlay:
+class OsuDroidPlay:
     def __init__(self, play_html: Union[Tag, NavigableString]):
-        self.title: str = play_html.find("strong", class_="block").text
-        self.rank_url: str = self._handle_rank(play_html.find("img")['src'])
-        self.stats: tuple = tuple(map(lambda a: a.strip(), play_html.find("small").text.split("/")))
+        self._title: str = play_html.find("strong", class_="block").text
+        self._rank_url: str = self._handle_rank(play_html.find("img")['src'])
+        self._stats: tuple = tuple(map(lambda a: a.strip(), play_html.find("small").text.split("/")))
 
-        self.date: datetime = datetime.strptime(self.stats[0], '%Y-%m-%d %H:%M:%S') - timedelta(hours=1)
-        self.score: int = int(self.stats[1].replace(",", ''))
-        self.mods: str = _replace_mods(self.stats[2])
-        self.combo: int = int(self.stats[3][:-1])
-        self.accuracy: float = float(self.stats[4][:-1])
+        self._date: datetime = datetime.strptime(self._stats[0], '%Y-%m-%d %H:%M:%S') - timedelta(hours=1)
+        self._score: int = int(self._stats[1].replace(",", ''))
+        self._mods: str = _replace_mods(self._stats[2])
+        self._max_combo: int = int(self._stats[3][:-1])
+        self._accuracy: float = float(self._stats[4][:-1])
 
-        self.hidden_data = list(map(
+        self._hidden_data = list(map(
             lambda a: a.strip().split(":")[1].replace("}", ""), play_html.find("span", class_="hidden").text.split(",")
         ))
 
-        self.misscount = int(self.hidden_data[0])
-        self.hash_ = self.hidden_data[1]
+        self._misscount = int(self._hidden_data[0])
+        self._hash_ = self._hidden_data[1]
+
+    @property
+    def title(self) -> str:
+        return self._title
+
+    @property
+    def rank_url(self) -> str:
+        return self._rank_url
+
+    @property
+    def date(self) -> datetime:
+        return self._date
+
+    @property
+    def score(self) -> int:
+        return self._score
+
+    @property
+    def mods(self) -> str:
+        return self._mods
+
+    @property
+    def max_combo(self) -> int:
+        return self._max_combo
+
+    @property
+    def accuracy(self) -> float:
+        return self._accuracy
+
+    @property
+    def misses(self) -> int:
+        return self._misscount
+
+    @property
+    def hash(self) -> str:
+        return self._hash_
 
     @staticmethod
     def _handle_rank(rank_src) -> str:
@@ -214,7 +250,7 @@ class _OsuDroidPlay:
         return rank_url
 
 
-def _replace_mods(modstring: str):
+def _replace_mods(modstring: str) -> str:
     modstring = modstring.replace("DoubleTime", "DT").replace(
         "Hidden", "HD").replace("HardRock", "HR").replace(
         "Hidden", "HD").replace("HardRock", "HR").replace(
@@ -228,8 +264,10 @@ def _replace_mods(modstring: str):
     return modstring
 
 
-async def new_osu_droid_profile(uid: int, needs_player_html: bool = False, needs_pp_data: bool = False):
-    user = _OsuDroidProfile(uid, needs_player_html=needs_player_html, needs_pp_data=needs_pp_data)
+async def new_osu_droid_profile(
+        uid: int, needs_player_html: bool = False, needs_pp_data: bool = False
+) -> OsuDroidProfile:
+    user = OsuDroidProfile(uid, needs_player_html=needs_player_html, needs_pp_data=needs_pp_data)
     await user.setup()
 
     return user

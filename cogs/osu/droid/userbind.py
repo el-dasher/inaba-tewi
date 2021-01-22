@@ -1,7 +1,10 @@
+from datetime import datetime
+from typing import Union
+
 import discord
 from discord.ext import commands
 
-from helpers.osu.droid.osu_droid_data import new_osu_droid_profile
+from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
 from utils.database import users_collection
 from utils.osu_droid_utils import default_total_dpp, default_user_exists_check
 
@@ -12,18 +15,16 @@ class UserBind(commands.Cog):
 
     async def bind_user(
             self, ctx: commands.Context, member_to_bind: discord.Member,
-            osu_droid_user_: new_osu_droid_profile, force_bind: bool = False
+            osu_droid_user_: OsuDroidProfile, force_bind: bool = False
     ) -> discord.Message:
         if await default_user_exists_check(ctx, osu_droid_user_):
-            users_collection.set({str(member_to_bind.id): osu_droid_user_.uid}, merge=True)
-
             bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
+            users_collection.set({str(member_to_bind.id): osu_droid_user_.uid}, merge=True)
 
             return await ctx.reply(ctx.author.mention, embed=bind_embed)
 
-    @staticmethod
     def new_bind_embed(
-            member_to_bind: discord.member, osu_droid_user_: new_osu_droid_profile, force_bind: bool = False
+            self, member_to_bind: discord.member, osu_droid_user_: OsuDroidProfile, force_bind: bool = False
     ) -> discord.Embed:
 
         bind_header: str = f'Você cadastrou seu usuário... {osu_droid_user_.username}'
@@ -34,11 +35,12 @@ class UserBind(commands.Cog):
                 f'O(a) adm cadastrou o(a) {droid_username} para o(a) {member_to_bind.display_name}'
             )
 
-        bind_embed: discord.Embed = discord.Embed(color=member_to_bind.color)
+        bind_embed: discord.Embed = discord.Embed(color=member_to_bind.color, timestamp=datetime.utcnow())
         bind_embed.set_author(name=bind_header, url=osu_droid_user_.main_profile_url)
         bind_embed.set_image(url=osu_droid_user_.avatar)
+        bind_embed.set_footer(text=self.bot.user.display_name, icon_url=self.bot.user.avatar_url)
 
-        droid_user_total_dpp = default_total_dpp(osu_droid_user_)
+        droid_user_total_dpp: Union[int, None] = default_total_dpp(osu_droid_user_)
 
         bind_embed.add_field(
             name=f"Informações do(a) {droid_username}",
@@ -58,7 +60,7 @@ class UserBind(commands.Cog):
         if not uid:
             return await ctx.reply('❎ | Você esqueceu do ID do seu perfil :(')
 
-        osu_droid_user = await new_osu_droid_profile(uid, needs_player_html=True, needs_pp_data=True)
+        osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(uid, needs_player_html=True, needs_pp_data=True)
 
         return await self.bind_user(ctx=ctx, member_to_bind=ctx.author, osu_droid_user_=osu_droid_user)
 
@@ -72,7 +74,7 @@ class UserBind(commands.Cog):
         if not uid:
             return await ctx.reply('❎ | Ei adm, você esqueceu do id desse usúario no jogo!')
 
-        osu_droid_user = await new_osu_droid_profile(uid, needs_player_html=True, needs_pp_data=True)
+        osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(uid, needs_player_html=True, needs_pp_data=True)
 
         return await self.bind_user(ctx, member_to_bind=member, osu_droid_user_=osu_droid_user, force_bind=True)
 

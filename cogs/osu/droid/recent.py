@@ -1,1 +1,68 @@
-# UNFINISHED
+from datetime import datetime
+from typing import Union
+
+import discord
+from aioosuapi import Beatmap
+from discord.ext import commands
+
+from helpers.osu.droid.beatmaps.calculator import new_osu_droid_play_bpp, OsuDroidBeatmapData
+from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay
+from helpers.osu.oppadc.oppadc.osumap import OsuStats
+from utils.osu_droid_utils import default_search_for_user_in_db_handling, default_user_exists_check
+from utils.osuapi import OSU_PPY_API
+
+
+class Recent(commands.Cog):
+    def __init__(self, bot: discord.ext.commands.Bot):
+        self.bot = bot
+
+    @commands.command(name="recent", aliases=["rs", "recentme", "recenthe"])
+    async def recent(
+            self, ctx: commands.Context, uid: Union[discord.Member, int] = None
+    ) -> Union[discord.Message, None]:
+        droid_user_id: Union[int, None] = await default_search_for_user_in_db_handling(ctx=ctx, uid=uid)
+
+        osu_droid_user: new_osu_droid_profile = await new_osu_droid_profile(
+            droid_user_id, needs_player_html=True, needs_pp_data=True
+        )
+
+        if not await default_user_exists_check(ctx, osu_droid_user):
+            return None
+
+        recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
+        droid_user_username: str = osu_droid_user.username
+
+        recent_play: OsuDroidPlay = osu_droid_user.recent_play
+        recent_beatmap_id: Beatmap = (await OSU_PPY_API.get_beatmap(h=recent_play.hash)).beatmap_id
+
+        # Play data adjusted to osu!droid values, e.g: nerfs, bpp
+        bumped_play: OsuDroidBeatmapData = await new_osu_droid_play_bpp(
+            recent_beatmap_id, recent_play.mods, recent_play.misses, recent_play.accuracy, recent_play.max_combo
+        )
+
+        play_stats: OsuStats = bumped_play.getStats(Mods=recent_play.mods)
+        play_diff: float = play_stats.total
+
+        recent_embed.set_author(
+            url=osu_droid_user.main_profile_url, name=f"{recent_play.title} {recent_play.mods} - {play_diff:.2f}★"
+        )
+
+        recent_embed.set_thumbnail(url=osu_droid_user.avatar)
+        recent_embed.set_footer(text="\u200b", icon_url=recent_play.rank_url)
+        recent_embed.add_field(
+            name=f"Dados da play do(a) {droid_user_username}",
+            value=">>> "
+                  "**"
+                  f"BR_DPP: {bumped_play.raw_pp:.2f}                           \n"
+                  f"Accuracy: {recent_play.accuracy}%                          \n"
+                  f"Score: {recent_play.score:,}                               \n"
+                  f"Combo: {recent_play.max_combo} / {bumped_play.maxCombo()}  \n"
+                  f"Misses: {recent_play.misses}                               \n"
+                  "**".strip()
+        )
+
+        await ctx.reply(content=ctx.author.mention, embed=recent_embed)
+
+
+def setup(bot):
+    bot.add_cog(Recent(bot))

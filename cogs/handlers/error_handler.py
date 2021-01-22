@@ -1,6 +1,7 @@
-from discord.ext import commands
 from typing import Union
+
 import discord
+from discord.ext import commands
 
 
 class ErrorHandler(commands.Cog):

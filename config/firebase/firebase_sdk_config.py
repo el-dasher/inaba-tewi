@@ -3,9 +3,6 @@ from os import getenv
 _private_key: str = getenv('FIREBASE_PRIVATE_KEY').replace('\\n', '\n')
 _client_email: str = getenv('FIREBASE_CLIENT_EMAIL')
 
-print(_client_email)
-print(_private_key)
-
 FIREBASE_CONFIG = {
     "type": "service_account",
     "project_id": "inaba-tewi",
