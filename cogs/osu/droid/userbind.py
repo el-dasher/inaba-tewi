@@ -1,12 +1,13 @@
 from datetime import datetime
 from typing import Union
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, List
 
 import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile, OsuDroidPlay
 from utils.database import BINDED_DOCUMENT, USERS_DOCUMENT
+
 from utils.osu_droid_utils import default_total_dpp, default_user_exists_check, default_search_for_uid_in_db_handling
 
 
@@ -16,9 +17,9 @@ class UserBind(commands.Cog):
 
     @staticmethod
     def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
-        user_plays: Union[Tuple[OsuDroidPlay], Tuple[Dict[str, Any]]] = osu_droid_user_.recent_plays
+        new_user_plays: Union[Tuple[OsuDroidPlay], List[Dict[str, Any]]] = osu_droid_user_.recent_plays
 
-        user_plays = tuple(map(
+        new_user_plays = list(map(
             lambda a: {
                 "title": a.title,
                 "score": a.score,
@@ -28,10 +29,27 @@ class UserBind(commands.Cog):
                 "max_combo": a.max_combo,
                 "hash": a.hash
             },
-            user_plays
+            new_user_plays
         ))
 
-        USERS_DOCUMENT.set(
+        old_users_data: dict = USERS_DOCUMENT.get().to_dict()
+
+        old_user_plays: List[dict] = [
+            {"title": "", "score": 0, "accuracy": 0, "misses": 0, "mods": 0, "max_combo": 0, "hash": 0}
+        ]
+
+        user_id_str: str = f"{osu_droid_user_.uid}"
+
+        if user_id_str in old_users_data:
+            old_user_data = old_users_data[user_id_str]
+            if "user_plays" in old_user_data:
+                old_user_plays = old_user_data[user_id_str]['user_plays']
+
+        user_plays = []
+        user_plays.extend(new_user_plays)
+        user_plays.extend(old_user_plays)
+
+        USERS_DOCUMENT.update(
             {
                 f"{osu_droid_user_.uid}": {
                     "username": osu_droid_user_.username,
@@ -42,7 +60,7 @@ class UserBind(commands.Cog):
                     "total_dpp": osu_droid_user_.total_dpp,
                     "user_plays": user_plays
                 }
-            }, merge=True
+            }
         )
 
     async def bind_user(
@@ -124,11 +142,13 @@ class UserBind(commands.Cog):
 
     @commands.has_permissions(administrator=True)
     @commands.command(name='forcesubmit', aliases=('submithim', 'submither', 'submitzir'))
-    async def force_submit(self, ctx: commands.Context, member: discord.Member = None):
+    async def force_submit(self, ctx: commands.Context, member: Union[discord.Member, int] = None):
         if not member:
             return await ctx.reply('❎ **| Ei adm, você esqueceu do usúario que você quer submitar!**')
 
-        droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=member)
+        droid_user_id = member
+        if isinstance(member, discord.Member):
+            droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=member)
 
         if not droid_user_id:
             return None
@@ -142,13 +162,15 @@ class UserBind(commands.Cog):
             uid, needs_player_html=True, needs_pp_data=True
         )
 
-        self.submit_profile_to_db(osu_droid_user)
+        if await default_user_exists_check(ctx, osu_droid_user):
 
-        bot_submit_res: str = "✅ **| Os seus dados foram sequestrados por mim com sucesso!**"
-        if force_submit:
-            bot_submit_res = "✅ **| Os dados dele foram sequestrados por mim com sucesso!**"
+            self.submit_profile_to_db(osu_droid_user)
 
-        await ctx.reply(bot_submit_res)
+            bot_submit_res: str = "✅ **| Os seus dados foram sequestrados por mim com sucesso!**"
+            if force_submit:
+                bot_submit_res = "✅ **| Os dados dele foram sequestrados por mim com sucesso!**"
+
+            await ctx.reply(bot_submit_res)
 
 
 def setup(bot):
