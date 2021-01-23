@@ -90,7 +90,12 @@ class OsuDroidProfile:
             raise MissingRequiredArgument(missed_arg_name=self._needs_pp_data_string)
 
         if 'pp' not in self._user_pp_data_json:
-            self._user_pp_data_json['pp']['total'] = "OFF"
+            self._user_pp_data_json = {
+                'pp': {
+                    'total': 'OFF',
+                    'list': []
+                }
+            }
 
     def _player_html_required(self):
         if not self.needs_player_html:
