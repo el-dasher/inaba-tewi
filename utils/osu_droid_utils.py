@@ -116,8 +116,7 @@ def get_default_beatmap_stats_string(
         extra_information = (
             f"Circles: {bumped_osu_play.amount_circle} - Sliders: {bumped_osu_play.amount_slider}    "
             f"Spinners: {bumped_osu_play.amount_spinner}                                           \n"
-            f"{approved_str} | ❤ - {beatmap_data_from_api.favourite_count}                        \n"
-                .strip()
+            f"{approved_str} | ❤ - {beatmap_data_from_api.favourite_count}                        \n".strip()
         )
 
     total_length: datetime.timedelta = datetime.timedelta(seconds=bumped_osu_play.total_length)

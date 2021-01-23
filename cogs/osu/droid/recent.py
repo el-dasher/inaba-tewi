@@ -50,7 +50,7 @@ class Recent(commands.Cog):
         play_diff: float = play_stats.total
 
         recent_embed.set_author(
-            url=osu_droid_user.main_profile_url,
+            url=recent_beatmap.url,
             name=f"{recent_play.title} {recent_play.mods} - {play_diff:.2f}★",
             icon_url=osu_droid_user.avatar
         )

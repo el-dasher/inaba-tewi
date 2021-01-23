@@ -51,13 +51,13 @@ class MapCalc(commands.Cog):
             if param.startswith("+"):
                 mods = param.replace("+", "")
             else:
-                param = param[:-1]
+                param_to_int: str = param[:-1]
 
-                if param.isnumeric():
+                if param_to_int.isnumeric():
                     if param.endswith("m"):
-                        misses = int(param)
+                        misses = int(param_to_int)
                     elif param.endswith("x"):
-                        combo = int(param)
+                        combo = int(param_to_int)
                 else:
                     try:
                         if param.endswith("%"):
@@ -92,15 +92,19 @@ class MapCalc(commands.Cog):
             f"PP RAW: {calc_beatmap.raw_pp:.2f} -({max_values_with_calc_acc.raw_pp:.2f}) | {ppv2_calc.raw_pp:.2f}\n"
         )
 
+        speed_pp_str: str = f"Speed PP: {calc_beatmap.speed_pp:.2f} | {ppv2_calc.speed_pp:.2f}\n"
+        aim_pp_str: str = f"Aim PP: {calc_beatmap.aim_pp:.2f} | {ppv2_calc.aim_pp:.2f}\n"
+        acc_pp_str: str = f"Acc PP: {calc_beatmap.acc_pp:.2f} | {ppv2_calc.acc_pp:.2f}\n"
+
         calc_embed.add_field(
             name="---Performance",
             value=">>> **"
-                  "BR_DPP | PPV2                                                     \n"
+                  "__BR_DPP -(max_br_dpp) | PPV2__\n"
                   f"{raw_pp_str}"
-                  f"Aim PP: {calc_beatmap.aim_pp:.2f} | {ppv2_calc.aim_pp:.2f}       \n"
-                  f"Speed PP: {calc_beatmap.speed_pp:.2f} | {ppv2_calc.speed_pp:.2f} \n"
-                  f"Acc PP: {calc_beatmap.acc_pp:.2f} | {ppv2_calc.acc_pp:.2f}       \n"
-                  f"**".strip()
+                  f"{aim_pp_str}"
+                  f"{speed_pp_str}"
+                  f"{acc_pp_str}"
+                  f"**"
         )
 
         calc_embed.add_field(
