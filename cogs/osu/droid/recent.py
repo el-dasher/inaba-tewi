@@ -32,7 +32,9 @@ class Recent(commands.Cog):
             droid_user_id, needs_player_html=True, needs_pp_data=True
         )
 
-        if not await default_user_exists_check(ctx, osu_droid_user) or not droid_user_id:
+        if not droid_user_id:
+            return None
+        if not await default_user_exists_check(ctx, osu_droid_user):
             return None
 
         recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
