@@ -101,7 +101,11 @@ class MapCalc(commands.Cog):
                   f"**".strip()
         )
 
-        calc_embed.add_field(name="---Beatmap", value=get_default_beatmap_stats_string(calc_beatmap), inline=False)
+        calc_embed.add_field(
+            name="---Beatmap",
+            value=get_default_beatmap_stats_string(calc_beatmap, beatmap_data_from_osu_api),
+            inline=False
+        )
 
         return calc_embed
 

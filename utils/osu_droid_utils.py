@@ -1,12 +1,15 @@
 from typing import Union
 
 import discord
+import datetime
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
 from helpers.osu.beatmaps.calculator import BumpedOsuPlay
 from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
 from utils.database import binded_collection
+
+import aioosuapi
 
 
 def default_total_dpp(osu_droid_user: OsuDroidProfile) -> Union[str, None]:
@@ -88,13 +91,29 @@ async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int
     return create_return_dict(getted_user, user_in_db)
 
 
-def get_default_beatmap_stats_string(bumped_osu_play: BumpedOsuPlay) -> str:
+def get_default_beatmap_stats_string(
+        bumped_osu_play: BumpedOsuPlay, beatmap_data_from_api: aioosuapi.Beatmap = None
+) -> str:
+    is_approved: bool = True if beatmap_data_from_api.approved == "1" else False
+
+    extra_information: str = ""
+    if beatmap_data_from_api:
+        extra_information = (
+            f"Circles: {bumped_osu_play.amount_circle} - Sliders: {bumped_osu_play.amount_slider}    "
+            f"Spinners: {bumped_osu_play.amount_spinner}                                           \n"
+            f"Approved: {is_approved} | ❤ - {beatmap_data_from_api.favourite_count}               \n"
+            .strip()
+        )
+
+    total_length: datetime.timedelta = datetime.timedelta(seconds=bumped_osu_play.total_length)
+
     default_beatmap_stats_string: str = (
         ">>> "
         "**"
-        f"CS | OD: {bumped_osu_play.base_cs:.2f} | {bumped_osu_play.base_od:.2f}             \n"
-        f"AR | HP: {bumped_osu_play.base_ar:.2f} | {bumped_osu_play.base_hp:.2f}             \n"
-        f"BPM | Length: {bumped_osu_play.bpm:.2f} | {bumped_osu_play.total_length / 60:.2f}m \n"
+        f"CS | OD: {bumped_osu_play.base_cs:.2f} | {bumped_osu_play.base_od:.2f}               \n"
+        f"AR | HP: {bumped_osu_play.base_ar:.2f} | {bumped_osu_play.base_hp:.2f}               \n"
+        f"BPM | Length: {bumped_osu_play.bpm:.2f} | {total_length}m \n"
+        f"{extra_information}"
         "**".strip()
     )
 

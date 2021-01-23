@@ -138,9 +138,9 @@ class BumpedOsuPlay(oppadc.OsuMap):
 
     def _dispose_beatmap_data_from_osu_api_diff_data(self):
         if self._beatmap_data_from_osu_api:
-
             self.total_length: int = int(float(self._beatmap_data_from_osu_api.total_length) / self.speed_multiplier)
             self.bpm: float = float(self._beatmap_data_from_osu_api.bpm) * self.speed_multiplier
+
             if "DT" in self.mods:
                 self.bpm *= 1.5
                 self.total_length /= 0.75
