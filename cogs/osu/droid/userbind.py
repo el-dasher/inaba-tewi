@@ -114,7 +114,7 @@ class UserBind(commands.Cog):
         return await self.bind_user(ctx, member_to_bind=member, osu_droid_user_=osu_droid_user, force_bind=True)
 
     @commands.command(name="submitprofile", aliases=("submit", "submitpf"))
-    async def submit_profile(self, ctx: commands.Context):
+    async def submit_profile(self, ctx: commands.Context) -> discord.Message:
         droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=None)
 
         osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(
@@ -122,6 +122,8 @@ class UserBind(commands.Cog):
         )
 
         self.submit_profile_to_db(osu_droid_user)
+
+        return await ctx.reply("✅ **| Os seus dados foram sequestrados por mim com sucesso!")
 
 
 def setup(bot):
