@@ -94,14 +94,30 @@ async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int
 def get_default_beatmap_stats_string(
         bumped_osu_play: BumpedOsuPlay, beatmap_data_from_api: aioosuapi.Beatmap = None
 ) -> str:
-    is_approved: bool = True if beatmap_data_from_api.approved == "1" else False
+    approved_state: str = beatmap_data_from_api.approved
+
+    approved_str = ""
+    if approved_state == "-1":
+        approved_str = "Graveyard"
+    elif approved_state == "0":
+        approved_str = "In-Progress"
+    elif approved_state == "1":
+        approved_str = "Ranked"
+    elif approved_state == "2":
+        approved_str = "Approved"
+    elif approved_state == "3":
+        approved_str = "Qualified"
+    elif approved_state == "4":
+        approved_str = "Loved"
+
+
 
     extra_information: str = ""
     if beatmap_data_from_api:
         extra_information = (
             f"Circles: {bumped_osu_play.amount_circle} - Sliders: {bumped_osu_play.amount_slider}    "
             f"Spinners: {bumped_osu_play.amount_spinner}                                           \n"
-            f"Approved: {is_approved} | ❤ - {beatmap_data_from_api.favourite_count}               \n"
+            f"{approved_str} | ❤ - {beatmap_data_from_api.favourite_count}               \n"
             .strip()
         )
 
@@ -112,7 +128,7 @@ def get_default_beatmap_stats_string(
         "**"
         f"CS | OD: {bumped_osu_play.base_cs:.2f} | {bumped_osu_play.base_od:.2f}               \n"
         f"AR | HP: {bumped_osu_play.base_ar:.2f} | {bumped_osu_play.base_hp:.2f}               \n"
-        f"BPM | Length: {bumped_osu_play.bpm:.2f} | {total_length}m \n"
+        f"BPM | Length: {bumped_osu_play.bpm:.2f} | {total_length}                             \n"
         f"{extra_information}"
         "**".strip()
     )
