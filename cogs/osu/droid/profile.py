@@ -1,4 +1,4 @@
-from datetime import datetime
+from utils.bot_defaults import setup_generic_embed
 from typing import Union
 
 import discord
@@ -18,6 +18,9 @@ class Profile(commands.Cog):
     ) -> Union[discord.Message, None]:
         droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
 
+        if not droid_user_id:
+            return None
+
         osu_droid_user: new_osu_droid_profile = await new_osu_droid_profile(
             droid_user_id, needs_player_html=True, needs_pp_data=True
         )
@@ -27,9 +30,9 @@ class Profile(commands.Cog):
         else:
             return None
 
-        profile_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
+        profile_embed: discord.Embed = setup_generic_embed(self.bot, ctx.author)
+
         profile_embed.set_thumbnail(url=osu_droid_user.avatar)
-        profile_embed.set_footer(text=self.bot.user.display_name, icon_url=self.bot.user.avatar_url)
         profile_embed.set_author(url=osu_droid_user.main_profile_url, name=f"Perfil do(a) {osu_droid_user.username}")
 
         droid_user_country: str = osu_droid_user.country.lower()

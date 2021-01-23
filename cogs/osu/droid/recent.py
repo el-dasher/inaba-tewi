@@ -6,9 +6,15 @@ from aioosuapi import Beatmap
 from discord.ext import commands
 from oppadc.osumap import OsuStats
 
-from helpers.osu.beatmaps.calculator import new_osu_droid_play_bpp, OsuDroidBeatmapData
+from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay
-from utils.osu_droid_utils import default_search_for_uid_in_db_handling, default_user_exists_check
+
+from utils.osu_droid_utils import (
+    default_search_for_uid_in_db_handling,
+    default_user_exists_check,
+    get_default_beatmap_stats_string
+)
+
 from utils.osuapi import OSU_PPY_API
 
 
@@ -26,7 +32,7 @@ class Recent(commands.Cog):
             droid_user_id, needs_player_html=True, needs_pp_data=True
         )
 
-        if not await default_user_exists_check(ctx, osu_droid_user):
+        if not await default_user_exists_check(ctx, osu_droid_user) or not droid_user_id:
             return None
 
         recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
@@ -35,7 +41,7 @@ class Recent(commands.Cog):
         recent_beatmap: Beatmap = (await OSU_PPY_API.get_beatmap(h=recent_play.hash))
 
         # Play data adjusted to osu!droid values, e.g: nerfs, bpp
-        bumped_play: OsuDroidBeatmapData = await new_osu_droid_play_bpp(
+        bumped_play: BumpedOsuPlay = await new_bumped_osu_play(
             recent_beatmap.beatmap_id, recent_play.mods, recent_play.misses,
             recent_play.accuracy, recent_play.max_combo, adjust_to_droid=True, beatmap_data_from_osu_api=recent_beatmap
         )
@@ -57,7 +63,7 @@ class Recent(commands.Cog):
             value=">>> "
                   "**"
                   f"BR_DPP: {bumped_play.raw_pp:.2f}                           \n"
-                  f"Accuracy: {recent_play.accuracy}%                          \n"
+                  f"Accuracy: {recent_play.accuracy:.2f}%                          \n"
                   f"Score: {recent_play.score:,}                               \n"
                   f"Combo: {recent_play.max_combo} / {bumped_play.maxCombo()}  \n"
                   f"Misses: {recent_play.misses}                               \n"
@@ -65,13 +71,7 @@ class Recent(commands.Cog):
         )
 
         recent_embed.add_field(
-            name=f"Infos do beatmap",
-            value=">>> "
-                  "**"
-                  f"CS/OD: {bumped_play.base_cs} / {bumped_play.base_od}  \n"
-                  f"AR/HP: {bumped_play.base_ar} / {bumped_play.base_hp}  \n"
-                  f"BPM: {bumped_play.bpm}                                \n"
-                  "**".strip()
+            name=f"Infos do beatmap", value=get_default_beatmap_stats_string(bumped_play), inline=False
         )
 
         await ctx.reply(content=ctx.author.mention, embed=recent_embed)

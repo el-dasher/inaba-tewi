@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
+from helpers.osu.beatmaps.calculator import BumpedOsuPlay
 from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
 from utils.database import binded_collection
 
@@ -56,7 +57,8 @@ async def default_search_for_uid_in_db_handling(ctx: commands.Context, uid: Unio
             if response_from_db['in_db']:
                 droid_user_id = response_from_db['uid']
             else:
-                return await ctx.reply(USER_NOT_BINDED)
+                await ctx.reply(USER_NOT_BINDED)
+                droid_user_id = None
         else:
             droid_user_id = uid
 
@@ -84,3 +86,16 @@ async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int
         getted_user = current_binded_users[str(discord_user.id)]
 
     return create_return_dict(getted_user, user_in_db)
+
+
+def get_default_beatmap_stats_string(bumped_osu_play: BumpedOsuPlay) -> str:
+    default_beatmap_stats_string: str = (
+        ">>> "
+        "**"
+        f"CS | OD: {bumped_osu_play.base_cs:.2f} | {bumped_osu_play.base_od:.2f}             \n"
+        f"AR | HP: {bumped_osu_play.base_ar:.2f} | {bumped_osu_play.base_hp:.2f}             \n"
+        f"BPM | Length: {bumped_osu_play.bpm:.2f} | {bumped_osu_play.total_length / 60:.2f}m \n"
+        "**".strip()
+    )
+
+    return default_beatmap_stats_string
