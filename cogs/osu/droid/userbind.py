@@ -146,7 +146,7 @@ class UserBind(commands.Cog):
 
         bot_submit_res: str = "✅ **| Os seus dados foram sequestrados por mim com sucesso!**"
         if force_submit:
-            bot_submit_res = "✅ **| Os seus dados foram sequestrados por mim com sucesso!**"
+            bot_submit_res = "✅ **| Os dados dele foram sequestrados por mim com sucesso!**"
 
         await ctx.reply(bot_submit_res)
 
