@@ -2,7 +2,6 @@ from typing import Union
 
 import aiohttp
 import aioosuapi
-
 import oppadc
 
 

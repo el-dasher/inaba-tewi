@@ -1,15 +1,16 @@
+import asyncio
+import datetime
 from typing import Union
 
-import discord
-import datetime
-from discord.ext import commands
-
-from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
-from helpers.osu.beatmaps.calculator import BumpedOsuPlay
-from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
-from utils.database import binded_collection
-
 import aioosuapi
+import discord
+from discord.ext import commands
+from firebase_admin.firestore import firestore
+
+from helpers.osu.beatmaps.calculator import BumpedOsuPlay
+from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
+from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
+from utils.database import BINDED_DOCUMENT, RECENT_CALC_DOCUMENT
 
 
 def default_total_dpp(osu_droid_user: OsuDroidProfile) -> Union[str, None]:
@@ -74,7 +75,7 @@ async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int
     :return: The user's osu!droid uid
     """
 
-    current_binded_users: dict = binded_collection.get().to_dict()
+    current_binded_users: dict = BINDED_DOCUMENT.get().to_dict()
     user_in_db: bool = False
     getted_user: Union[int, None] = None
 
@@ -94,31 +95,29 @@ async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int
 def get_default_beatmap_stats_string(
         bumped_osu_play: BumpedOsuPlay, beatmap_data_from_api: aioosuapi.Beatmap = None
 ) -> str:
-    approved_state: str = beatmap_data_from_api.approved
-
-    approved_str = ""
-    if approved_state == "-1":
-        approved_str = "Graveyard"
-    elif approved_state == "0":
-        approved_str = "In-Progress"
-    elif approved_state == "1":
-        approved_str = "Ranked"
-    elif approved_state == "2":
-        approved_str = "Approved"
-    elif approved_state == "3":
-        approved_str = "Qualified"
-    elif approved_state == "4":
-        approved_str = "Loved"
-
-
-
     extra_information: str = ""
+
     if beatmap_data_from_api:
+        approved_state: str = beatmap_data_from_api.approved
+
+        approved_str = ""
+        if approved_state == "-1":
+            approved_str = "Graveyard"
+        elif approved_state == "0":
+            approved_str = "In-Progress"
+        elif approved_state == "1":
+            approved_str = "Ranked"
+        elif approved_state == "2":
+            approved_str = "Approved"
+        elif approved_state == "3":
+            approved_str = "Qualified"
+        elif approved_state == "4":
+            approved_str = "Loved"
         extra_information = (
             f"Circles: {bumped_osu_play.amount_circle} - Sliders: {bumped_osu_play.amount_slider}    "
             f"Spinners: {bumped_osu_play.amount_spinner}                                           \n"
-            f"{approved_str} | ❤ - {beatmap_data_from_api.favourite_count}               \n"
-            .strip()
+            f"{approved_str} | ❤ - {beatmap_data_from_api.favourite_count}                        \n"
+                .strip()
         )
 
     total_length: datetime.timedelta = datetime.timedelta(seconds=bumped_osu_play.total_length)
@@ -126,11 +125,18 @@ def get_default_beatmap_stats_string(
     default_beatmap_stats_string: str = (
         ">>> "
         "**"
-        f"CS | OD: {bumped_osu_play.base_cs:.2f} | {bumped_osu_play.base_od:.2f}               \n"
-        f"AR | HP: {bumped_osu_play.base_ar:.2f} | {bumped_osu_play.base_hp:.2f}               \n"
-        f"BPM | Length: {bumped_osu_play.bpm:.2f} | {total_length}                             \n"
+        f"CS: {bumped_osu_play.base_cs:.2f} | OD: {bumped_osu_play.base_od:.2f}    "
+        f"AR:  {bumped_osu_play.base_ar:.2f} | HP: {bumped_osu_play.base_hp:.2f} \n"
+        f"BPM: {bumped_osu_play.bpm:.2f} | Length {total_length}                 \n"
         f"{extra_information}"
         "**".strip()
     )
 
     return default_beatmap_stats_string
+
+
+async def clear_previous_calc_from_db_in_30_seconds(channel_id: int):
+    await asyncio.sleep(30)
+
+    calc_to_delete = RECENT_CALC_DOCUMENT
+    calc_to_delete.update({f"{channel_id}": firestore.DELETE_FIELD})

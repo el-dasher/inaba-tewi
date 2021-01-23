@@ -8,13 +8,13 @@ from oppadc.osumap import OsuStats
 
 from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay
-
+from utils.database import RECENT_CALC_DOCUMENT
 from utils.osu_droid_utils import (
     default_search_for_uid_in_db_handling,
     default_user_exists_check,
-    get_default_beatmap_stats_string
+    get_default_beatmap_stats_string,
+    clear_previous_calc_from_db_in_30_seconds
 )
-
 from utils.osuapi import OSU_PPY_API
 
 
@@ -25,7 +25,7 @@ class Recent(commands.Cog):
     @commands.command(name="recent", aliases=["rs", "recentme", "recenthe"])
     async def recent(
             self, ctx: commands.Context, uid: Union[discord.Member, int] = None
-    ) -> Union[discord.Message, None]:
+    ) -> None:
         droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
 
         osu_droid_user: new_osu_droid_profile = await new_osu_droid_profile(
@@ -63,7 +63,7 @@ class Recent(commands.Cog):
             value=">>> "
                   "**"
                   f"BR_DPP: {bumped_play.raw_pp:.2f}                           \n"
-                  f"Accuracy: {recent_play.accuracy:.2f}%                          \n"
+                  f"Accuracy: {recent_play.accuracy:.2f}%                      \n"
                   f"Score: {recent_play.score:,}                               \n"
                   f"Combo: {recent_play.max_combo} / {bumped_play.maxCombo()}  \n"
                   f"Misses: {recent_play.misses}                               \n"
@@ -74,7 +74,11 @@ class Recent(commands.Cog):
             name=f"Infos do beatmap", value=get_default_beatmap_stats_string(bumped_play), inline=False
         )
 
+        RECENT_CALC_DOCUMENT.set({f"{ctx.channel.id}": recent_beatmap.beatmap_id}, merge=True)
+
         await ctx.reply(content=ctx.author.mention, embed=recent_embed)
+
+        await clear_previous_calc_from_db_in_30_seconds(ctx.channel.id)
 
 
 def setup(bot):

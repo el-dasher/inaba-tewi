@@ -1,13 +1,15 @@
+from typing import Tuple, Union, List
+
+import aioosuapi
 import discord
 from discord.ext import commands
 
 from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
-from utils.osu_droid_utils import get_default_beatmap_stats_string
 from utils.bot_defaults import setup_generic_embed
+from utils.bot_setup import DEBUG
+from utils.database import RECENT_CALC_DOCUMENT
+from utils.osu_droid_utils import get_default_beatmap_stats_string, clear_previous_calc_from_db_in_30_seconds
 from utils.osuapi import OSU_PPY_API
-import aioosuapi
-
-from typing import Tuple, Union, List
 
 
 class MapCalc(commands.Cog):
@@ -107,28 +109,42 @@ class MapCalc(commands.Cog):
             inline=False
         )
 
+        RECENT_CALC_DOCUMENT.set({f"{ctx.channel.id}": beatmap_id}, merge=True)
+
         return calc_embed
 
-    @commands.command(name="mapcalc", aliases=["calc"])
+    @commands.command(name="mapcalc", aliases=["calc", "prevcalc"])
     async def map_calc(
             self, ctx: commands.Context, *params: Union[int, str]
-    ) -> Union[discord.Message, None]:
+    ) -> None:
+        params = list(params)
+
+        if ctx.invoked_with == "prevcalc":
+            try:
+                previous_beatmap_id = RECENT_CALC_DOCUMENT.get().to_dict()[f"{ctx.channel.id}"]
+            except KeyError:
+                return await ctx.reply("❎ **| Ninguém mandou um sequer beatmap aqui mano!**")
+            else:
+                params.insert(0, previous_beatmap_id)
 
         calc_embed = await self.calculate_main(ctx, params)
 
         if calc_embed:
-            return await ctx.reply(ctx.author.mention, embed=calc_embed)
+            await ctx.reply(ctx.author.mention, embed=calc_embed)
+            await clear_previous_calc_from_db_in_30_seconds(ctx.channel.id)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        beatmap_base_urls: tuple = ("https://osu.ppy.sh/beatmapsets/", "https://osu.ppy.sh/beatmapsets/")
+        if not DEBUG:
+            beatmap_base_urls: tuple = ("https://osu.ppy.sh/beatmapsets/", "https://osu.ppy.sh/beatmapsets/")
 
-        if message.content.startswith(beatmap_base_urls[0] or message.content.startswith(beatmap_base_urls[1])):
-            params: list = message.content.split()
-            calc_embed = await self.calculate_main(message, params, reply_errors=False)
+            if message.content.startswith(beatmap_base_urls[0] or message.content.startswith(beatmap_base_urls[1])):
+                params: list = message.content.split()
+                calc_embed = await self.calculate_main(message, params, reply_errors=False)
 
-            if calc_embed:
-                return await message.reply(message.author.mention, embed=calc_embed)
+                if calc_embed:
+                    await message.reply(message.author.mention, embed=calc_embed)
+                    await clear_previous_calc_from_db_in_30_seconds(message.channel.id)
 
 
 def setup(bot):

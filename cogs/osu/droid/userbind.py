@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
-from utils.database import binded_collection, users_collection
+from utils.database import BINDED_DOCUMENT, USERS_DOCUMENT
 from utils.osu_droid_utils import default_total_dpp, default_user_exists_check
 
 
@@ -20,8 +20,8 @@ class UserBind(commands.Cog):
         if await default_user_exists_check(ctx, osu_droid_user_):
             bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
 
-            binded_collection.set({f"{member_to_bind.id}": osu_droid_user_.uid}, merge=True)
-            users_collection.set(
+            BINDED_DOCUMENT.set({f"{member_to_bind.id}": osu_droid_user_.uid}, merge=True)
+            USERS_DOCUMENT.set(
                 {
                     f"{osu_droid_user_.uid}": {
                         "username": osu_droid_user_.username,
@@ -31,7 +31,7 @@ class UserBind(commands.Cog):
                         "play_count": osu_droid_user_.play_count,
                         "total_dpp": osu_droid_user_.total_dpp,
                     }
-                 }, merge=True
+                }, merge=True
             )
 
             return await ctx.reply(ctx.author.mention, embed=bind_embed)

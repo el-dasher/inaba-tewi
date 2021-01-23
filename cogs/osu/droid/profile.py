@@ -1,10 +1,10 @@
-from utils.bot_defaults import setup_generic_embed
 from typing import Union
 
 import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile
+from utils.bot_defaults import setup_generic_embed
 from utils.osu_droid_utils import default_total_dpp, default_search_for_uid_in_db_handling, default_user_exists_check
 
 

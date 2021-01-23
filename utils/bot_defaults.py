@@ -1,6 +1,7 @@
-from discord.ext import commands
-import discord
 from datetime import datetime
+
+import discord
+from discord.ext import commands
 
 
 def setup_generic_embed(bot: commands.Bot, ctx_author: discord.Member):
