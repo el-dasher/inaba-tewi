@@ -1,6 +1,6 @@
 from utils.env_setup import setup_env
 
-DEBUG: bool = False
+DEBUG: bool = True
 setup_env()
 
 DEFAULT_BOT_PREFIXES: tuple
@@ -11,7 +11,8 @@ else:
 
 _RAW_COGS: tuple = (
     'osu.droid.userbind', 'osu.droid.profile', 'osu.droid.recent', 'osu.droid.beatmap_calc',
-    'handlers.error_handler'
+    'handlers.error_handler',
+    'tools.avatar'
 )
 
 COGS: tuple = tuple(map(lambda cog_path: f'cogs.{cog_path}', _RAW_COGS))

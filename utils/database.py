@@ -8,7 +8,7 @@ BINDED_DOCUMENT: firestore.DocumentReference = TEWI_DB.collection('OSU!DROID').d
 
 # Collection of users with their respective data for every binded osu!droid uid
 # noinspection PyTypeChecker
-USERS_DOCUMENT: firestore.DocumentReference = TEWI_DB.collection('OSU!DROID').document('BINDED_USERS')
+USERS_DOCUMENT: firestore.DocumentReference = TEWI_DB.collection('OSU!DROID').document('USERS_DATA')
 
 # The most recent beatmap calculated collection
 # noinspection PyTypeChecker

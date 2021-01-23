@@ -1,17 +1,49 @@
 from datetime import datetime
 from typing import Union
+from typing import Tuple, Dict, Any
 
 import discord
 from discord.ext import commands
 
-from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
+from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile, OsuDroidPlay
 from utils.database import BINDED_DOCUMENT, USERS_DOCUMENT
-from utils.osu_droid_utils import default_total_dpp, default_user_exists_check
+from utils.osu_droid_utils import default_total_dpp, default_user_exists_check, default_search_for_uid_in_db_handling
 
 
 class UserBind(commands.Cog):
     def __init__(self, bot: discord.ext.commands.Bot):
         self.bot = bot
+
+    @staticmethod
+    def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
+        user_plays: Union[Tuple[OsuDroidPlay], Tuple[Dict[str, Any]]] = osu_droid_user_.recent_plays
+
+        user_plays = tuple(map(
+            lambda a: {
+                "title": a.title,
+                "score": a.score,
+                "accuracy": a.accuracy,
+                "misses": a.misses,
+                "mods": a.mods,
+                "max_combo": a.max_combo,
+                "hash": a.hash
+            },
+            user_plays
+        ))
+
+        USERS_DOCUMENT.set(
+            {
+                f"{osu_droid_user_.uid}": {
+                    "username": osu_droid_user_.username,
+                    "rank_score": osu_droid_user_.rank_score,
+                    "total_score": osu_droid_user_.total_score,
+                    "accuracy": osu_droid_user_.accuracy,
+                    "play_count": osu_droid_user_.play_count,
+                    "total_dpp": osu_droid_user_.total_dpp,
+                    "user_plays": user_plays
+                }
+            }, merge=True
+        )
 
     async def bind_user(
             self, ctx: commands.Context, member_to_bind: discord.Member,
@@ -21,18 +53,7 @@ class UserBind(commands.Cog):
             bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
 
             BINDED_DOCUMENT.set({f"{member_to_bind.id}": osu_droid_user_.uid}, merge=True)
-            USERS_DOCUMENT.set(
-                {
-                    f"{osu_droid_user_.uid}": {
-                        "username": osu_droid_user_.username,
-                        "rank_score": osu_droid_user_.rank_score,
-                        "total_score": osu_droid_user_.total_score,
-                        "accuracy": osu_droid_user_.accuracy,
-                        "play_count": osu_droid_user_.play_count,
-                        "total_dpp": osu_droid_user_.total_dpp,
-                    }
-                }, merge=True
-            )
+            self.submit_profile_to_db(osu_droid_user_)
 
             return await ctx.reply(ctx.author.mention, embed=bind_embed)
 
@@ -91,6 +112,16 @@ class UserBind(commands.Cog):
         osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(uid, needs_player_html=True, needs_pp_data=True)
 
         return await self.bind_user(ctx, member_to_bind=member, osu_droid_user_=osu_droid_user, force_bind=True)
+
+    @commands.command(name="submitprofile", aliases=("submit", "submitpf"))
+    async def submit_profile(self, ctx: commands.Context):
+        droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=None)
+
+        osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(
+            droid_user_id, needs_player_html=True, needs_pp_data=True
+        )
+
+        self.submit_profile_to_db(osu_droid_user)
 
 
 def setup(bot):

@@ -126,7 +126,7 @@ def get_default_beatmap_stats_string(
         "**"
         f"CS: {bumped_osu_play.base_cs:.2f} | OD: {bumped_osu_play.base_od:.2f}    "
         f"AR:  {bumped_osu_play.base_ar:.2f} | HP: {bumped_osu_play.base_hp:.2f} \n"
-        f"BPM: {bumped_osu_play.bpm:.2f} | Length {total_length}                 \n"
+        f"BPM: {bumped_osu_play.bpm:.2f} | Length: {total_length}                \n"
         f"{extra_information}"
         "**".strip()
     )
@@ -134,8 +134,8 @@ def get_default_beatmap_stats_string(
     return default_beatmap_stats_string
 
 
-async def clear_previous_calc_from_db_in_30_seconds(channel_id: int):
-    await asyncio.sleep(30)
+async def clear_previous_calc_from_db_in_one_minute(channel_id: int):
+    await asyncio.sleep(60)
 
     calc_to_delete = RECENT_CALC_DOCUMENT
     calc_to_delete.update({f"{channel_id}": firestore.DELETE_FIELD})

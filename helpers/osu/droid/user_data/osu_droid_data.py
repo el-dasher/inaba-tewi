@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from os import getenv
-from typing import Union
+from typing import Union, Tuple
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -48,6 +48,7 @@ class OsuDroidProfile:
         self._avatar: Union[str, None] = None
         self._country: Union[str, None] = None
         self._recent_play: Union[OsuDroidPlay, None] = None
+        self._recent_plays: Union[Tuple[OsuDroidPlay], None] = None
 
     async def setup(self) -> dict:
         async with aiohttp.ClientSession() as session:
@@ -190,7 +191,11 @@ class OsuDroidProfile:
 
         if not self._recent_play:
             play_html: Union[Tag, NavigableString] = self._player_html.find("li", class_="list-group-item")
-            self._recent_play = self._get_play_data(play_html)
+
+            try:
+                self._recent_play = self._get_play_data(play_html)
+            except AttributeError:
+                return None
 
         return self._recent_play
 
@@ -200,21 +205,24 @@ class OsuDroidProfile:
 
         return self.username != ""
 
-    # @property
-    # def recent_plays(self):
-    #   unfiltered_recent_plays = BeautifulSoup(requests.get(
-    #       f"http://ops.dgsrz.com/profile.php?uid={self.uid}").text, features="html.parser"
-    #                                           ).find_all("li", class_="list-group-item")
-    #
-    #    recent_plays = []
-    #   for play in unfiltered_recent_plays:
-    #        try:
-    #            play_data = self.get_play_data(play)
-    #        except AttributeError:
-    #            pass
-    #        else:
-    #            recent_plays.append(play_data)
-    #   return recent_plays
+    @property
+    def recent_plays(self):
+        self._player_html_required()
+
+        if not self._recent_plays:
+            recent_plays_htmls = self._player_html.find_all("li", class_="list-group-item")
+
+            def get_play_data(play_html):
+                try:
+                    play_data: OsuDroidPlay = self._get_play_data(play_html)
+                except AttributeError:
+                    pass
+                else:
+                    return play_data
+
+            self._recent_plays = tuple(filter(lambda b: b, map(lambda a: get_play_data(a), recent_plays_htmls)))
+
+        return self._recent_plays
 
 
 class OsuDroidPlay:

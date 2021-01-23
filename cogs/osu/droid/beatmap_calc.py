@@ -8,7 +8,7 @@ from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
 from utils.bot_defaults import setup_generic_embed
 from utils.bot_setup import DEBUG
 from utils.database import RECENT_CALC_DOCUMENT
-from utils.osu_droid_utils import get_default_beatmap_stats_string, clear_previous_calc_from_db_in_30_seconds
+from utils.osu_droid_utils import get_default_beatmap_stats_string, clear_previous_calc_from_db_in_one_minute
 from utils.osuapi import OSU_PPY_API
 
 
@@ -19,7 +19,6 @@ class MapCalc(commands.Cog):
     async def calculate_main(
             self, ctx: Union[discord.Message, commands.Context],
             *params: Union[Tuple[Union[int, str]], List[Union[int, str]]],
-            reply_errors: bool = True
     ):
 
         params = params[0]
@@ -41,8 +40,7 @@ class MapCalc(commands.Cog):
         beatmap_data_from_osu_api: aioosuapi.Beatmap = await OSU_PPY_API.get_beatmap(b=beatmap_id)
 
         if not beatmap_data_from_osu_api:
-            if reply_errors:
-                await ctx.reply("❎ **| Não foi possivel encontrar um beatmap com o id que você me forneceu!**")
+            await ctx.reply("❎ **| Não foi possivel encontrar um beatmap com o id que você me forneceu!**")
 
             return None
 
@@ -67,17 +65,20 @@ class MapCalc(commands.Cog):
                     except ValueError:
                         continue
 
-        calc_beatmap: BumpedOsuPlay = await new_bumped_osu_play(
-            beatmap_id, mods, misses, accuracy, combo, speed_multiplier, adjust_to_droid, beatmap_data_from_osu_api
-        )
-        max_values_with_calc_acc: BumpedOsuPlay = await new_bumped_osu_play(
-            beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
-            speed_multiplier, adjust_to_droid, beatmap_data_from_osu_api
-        )
-        ppv2_calc: BumpedOsuPlay = await new_bumped_osu_play(
-            beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
-            speed_multiplier, False, beatmap_data_from_osu_api
-        )
+        try:
+            calc_beatmap: BumpedOsuPlay = await new_bumped_osu_play(
+                beatmap_id, mods, misses, accuracy, combo, speed_multiplier, adjust_to_droid, beatmap_data_from_osu_api
+            )
+            max_values_with_calc_acc: BumpedOsuPlay = await new_bumped_osu_play(
+                beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
+                speed_multiplier, adjust_to_droid, beatmap_data_from_osu_api
+            )
+            ppv2_calc: BumpedOsuPlay = await new_bumped_osu_play(
+                beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
+                speed_multiplier, False, beatmap_data_from_osu_api
+            )
+        except AttributeError:
+            return await ctx.reply("❎ **| Ocorreu um erro ao calcular o beatmap")
 
         calc_embed = setup_generic_embed(self.bot, ctx.author)
 
@@ -135,20 +136,36 @@ class MapCalc(commands.Cog):
 
         if calc_embed:
             await ctx.reply(ctx.author.mention, embed=calc_embed)
-            await clear_previous_calc_from_db_in_30_seconds(ctx.channel.id)
+            await clear_previous_calc_from_db_in_one_minute(ctx.channel.id)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if not DEBUG:
-            beatmap_base_urls: tuple = ("https://osu.ppy.sh/beatmapsets/", "https://osu.ppy.sh/beatmapsets/")
+        if DEBUG:
+            if message.content.startswith("https://osu.ppy.sh/"):
+                beatmap_base_urls: tuple = (
+                    "https://osu.ppy.sh/beatmapsets/",
+                    "https://osu.ppy.sh/beatmaps/",
+                    "https://osu.ppy.sh/b/"
+                )
 
-            if message.content.startswith(beatmap_base_urls[0] or message.content.startswith(beatmap_base_urls[1])):
-                params: list = message.content.split()
-                calc_embed = await self.calculate_main(message, params, reply_errors=False)
+                base_url = message.content.split("/")
 
-                if calc_embed:
-                    await message.reply(message.author.mention, embed=calc_embed)
-                    await clear_previous_calc_from_db_in_30_seconds(message.channel.id)
+                if len(base_url) >= 5:
+                    base_url[1] = "//"
+                    base_url[-1] = "/"
+                    base_url[3] = f"/{base_url[3]}"
+                else:
+                    return None
+
+                base_url = "".join(base_url)
+
+                if base_url in beatmap_base_urls:
+                    params: list = message.content.split()
+                    calc_embed = await self.calculate_main(message, params)
+
+                    if calc_embed:
+                        await message.reply(message.author.mention, embed=calc_embed)
+                        await clear_previous_calc_from_db_in_one_minute(message.channel.id)
 
 
 def setup(bot):

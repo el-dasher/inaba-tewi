@@ -7,13 +7,13 @@ from discord.ext import commands
 from oppadc.osumap import OsuStats
 
 from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
-from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay
+from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay, OsuDroidProfile
 from utils.database import RECENT_CALC_DOCUMENT
 from utils.osu_droid_utils import (
     default_search_for_uid_in_db_handling,
     default_user_exists_check,
     get_default_beatmap_stats_string,
-    clear_previous_calc_from_db_in_30_seconds
+    clear_previous_calc_from_db_in_one_minute
 )
 from utils.osuapi import OSU_PPY_API
 
@@ -28,7 +28,7 @@ class Recent(commands.Cog):
     ) -> None:
         droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
 
-        osu_droid_user: new_osu_droid_profile = await new_osu_droid_profile(
+        osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(
             droid_user_id, needs_player_html=True, needs_pp_data=True
         )
 
@@ -80,7 +80,7 @@ class Recent(commands.Cog):
 
         await ctx.reply(content=ctx.author.mention, embed=recent_embed)
 
-        await clear_previous_calc_from_db_in_30_seconds(ctx.channel.id)
+        await clear_previous_calc_from_db_in_one_minute(ctx.channel.id)
 
 
 def setup(bot):
