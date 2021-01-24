@@ -141,7 +141,7 @@ class MapCalc(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if DEBUG:
+        if not DEBUG:
             if message.content.startswith("https://osu.ppy.sh/"):
                 beatmap_base_urls: tuple = (
                     "https://osu.ppy.sh/beatmapsets/",
