@@ -126,10 +126,8 @@ class BumpedOsuPlay(oppadc.OsuMap):
 
                 """
                 if self.aim_pp <= self.raw_pp / 3 and self.speed_pp >= self.raw_pp / 1.6:
-                    print("extreme spam")
                     self.speed_pp *= 0.6
                 elif self.aim_pp <= self.raw_pp / 2.5 and self.speed_pp >= self.raw_pp / 1.25:
-                    print("extreme spam 2")
                     self.speed_pp *= 0.5
                 """
 

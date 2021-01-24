@@ -1,14 +1,15 @@
 from datetime import datetime
-from typing import Union
 from typing import Tuple, Dict, Any, List
+from typing import Union
 
 import discord
 from discord.ext import commands
+from firebase_admin.firestore import firestore
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile, OsuDroidPlay
 from utils.database import BINDED_DOCUMENT, USERS_DOCUMENT
-
 from utils.osu_droid_utils import default_total_dpp, default_user_exists_check, default_search_for_uid_in_db_handling
+from utils.osuapi import OSU_PPY_API
 
 
 class UserBind(commands.Cog):
@@ -16,51 +17,70 @@ class UserBind(commands.Cog):
         self.bot = bot
 
     @staticmethod
-    def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
+    async def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
         new_user_plays: Union[Tuple[OsuDroidPlay], List[Dict[str, Any]]] = osu_droid_user_.recent_plays
 
-        new_user_plays = list(map(
-            lambda a: {
-                "title": a.title,
-                "score": a.score,
-                "accuracy": a.accuracy,
-                "misses": a.misses,
-                "mods": a.mods,
-                "max_combo": a.max_combo,
-                "hash": a.hash
-            },
-            new_user_plays
-        ))
+        new_user_plays_info: List[Dict[str, any]] = []
+
+        for play in new_user_plays:
+            play_beatmap = await OSU_PPY_API.get_beatmap(h=play.hash)
+
+            if play_beatmap is None:
+                continue
+
+            new_user_play = {
+                "title": play.title,
+                "score": play.score,
+                "accuracy": play.accuracy,
+                "misses": play.misses,
+                "mods": play.mods,
+                "max_combo": play.max_combo,
+                "rank_url": play.rank_url,
+                "hash": play.hash,
+                "date": play.date,
+                "beatmap_id": play_beatmap.beatmap_id
+            }
+
+            if new_user_play not in new_user_plays_info:
+                new_user_plays_info.append(new_user_play)
 
         old_users_data: dict = USERS_DOCUMENT.get().to_dict()
 
-        old_user_plays: List[dict] = [
-            {"title": "", "score": 0, "accuracy": 0, "misses": 0, "mods": 0, "max_combo": 0, "hash": 0}
-        ]
+        old_user_plays: List[dict] = []
 
         user_id_str: str = f"{osu_droid_user_.uid}"
 
         if user_id_str in old_users_data:
             old_user_data = old_users_data[user_id_str]
             if "user_plays" in old_user_data:
-                old_user_plays = old_user_data[user_id_str]['user_plays']
+                # So duplicated plays don't get uploaded to the db
+                old_user_plays = list(
+                    map(lambda a: a if a['hash'] not in list(map(lambda b: b['hash'], new_user_plays_info)) else None,
+                        old_user_data['user_plays'])
+                )
 
         user_plays = []
-        user_plays.extend(new_user_plays)
+
+        user_plays.extend(new_user_plays_info)
         user_plays.extend(old_user_plays)
 
-        USERS_DOCUMENT.update(
+        droid_user_uid: str = f"{osu_droid_user_.uid}"
+
+        USERS_DOCUMENT.set({droid_user_uid: {"user_plays": firestore.DELETE_FIELD}}, merge=True)
+
+        USERS_DOCUMENT.set(
             {
-                f"{osu_droid_user_.uid}": {
+                droid_user_uid: {
                     "username": osu_droid_user_.username,
                     "rank_score": osu_droid_user_.rank_score,
                     "total_score": osu_droid_user_.total_score,
                     "accuracy": osu_droid_user_.accuracy,
                     "play_count": osu_droid_user_.play_count,
+                    "avatar": osu_droid_user_.avatar,
                     "total_dpp": osu_droid_user_.total_dpp,
                     "user_plays": user_plays
                 }
-            }
+            }, merge=True
         )
 
     async def bind_user(
@@ -71,7 +91,7 @@ class UserBind(commands.Cog):
             bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
 
             BINDED_DOCUMENT.set({f"{member_to_bind.id}": osu_droid_user_.uid}, merge=True)
-            self.submit_profile_to_db(osu_droid_user_)
+            await self.submit_profile_to_db(osu_droid_user_)
 
             return await ctx.reply(ctx.author.mention, embed=bind_embed)
 
@@ -164,7 +184,8 @@ class UserBind(commands.Cog):
 
         if await default_user_exists_check(ctx, osu_droid_user):
 
-            self.submit_profile_to_db(osu_droid_user)
+            await ctx.reply("**Irei tentar sequestrar seus dados!**")
+            await self.submit_profile_to_db(osu_droid_user)
 
             bot_submit_res: str = "✅ **| Os seus dados foram sequestrados por mim com sucesso!**"
             if force_submit:

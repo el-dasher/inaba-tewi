@@ -134,8 +134,7 @@ def get_default_beatmap_stats_string(
     return default_beatmap_stats_string
 
 
-async def clear_previous_calc_from_db_in_one_minute(channel_id: int):
+async def clear_previous_calc_from_db_in_one_minute(ctx: Union[commands.Context, discord.Message]):
     await asyncio.sleep(60)
 
-    calc_to_delete = RECENT_CALC_DOCUMENT
-    calc_to_delete.update({f"{channel_id}": firestore.DELETE_FIELD})
+    RECENT_CALC_DOCUMENT.update({f"{ctx.channel.id}": firestore.DELETE_FIELD})

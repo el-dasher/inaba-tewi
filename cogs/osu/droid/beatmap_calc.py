@@ -7,6 +7,7 @@ from discord.ext import commands
 from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
 from utils.bot_defaults import setup_generic_embed
 from utils.bot_setup import DEBUG
+from utils.const_responses import BEATMAP_NOT_BEING_TALKED
 from utils.database import RECENT_CALC_DOCUMENT
 from utils.osu_droid_utils import get_default_beatmap_stats_string, clear_previous_calc_from_db_in_one_minute
 from utils.osuapi import OSU_PPY_API
@@ -128,7 +129,7 @@ class MapCalc(commands.Cog):
             try:
                 previous_beatmap_id = RECENT_CALC_DOCUMENT.get().to_dict()[f"{ctx.channel.id}"]
             except KeyError:
-                return await ctx.reply("❎ **| Ninguém mandou um sequer beatmap aqui mano!**")
+                return await ctx.reply(BEATMAP_NOT_BEING_TALKED)
             else:
                 params.insert(0, previous_beatmap_id)
 
@@ -136,7 +137,7 @@ class MapCalc(commands.Cog):
 
         if calc_embed:
             await ctx.reply(ctx.author.mention, embed=calc_embed)
-            await clear_previous_calc_from_db_in_one_minute(ctx.channel.id)
+            await clear_previous_calc_from_db_in_one_minute(ctx)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -165,7 +166,7 @@ class MapCalc(commands.Cog):
 
                     if calc_embed:
                         await message.reply(message.author.mention, embed=calc_embed)
-                        await clear_previous_calc_from_db_in_one_minute(message.channel.id)
+                        await clear_previous_calc_from_db_in_one_minute(message)
 
 
 def setup(bot):

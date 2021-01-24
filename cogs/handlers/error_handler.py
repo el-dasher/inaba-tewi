@@ -26,8 +26,16 @@ class ErrorHandler(commands.Cog):
             return await ctx.reply(
                 "❎ **| Algum parâmetro que você digitou no comando está com o tipo errado. Ex: ID (números) -> letras**"
             )
+
         elif hasattr(exc, "original"):
-            raise exc.original
+
+            if "ContentTypeError" in exc.args[0]:
+                return await ctx.reply(
+                    "❎ **| Não foi possivel adquirir uma resposta do site"
+                    " ou API necessária para que este comando funcione!"
+                )
+            else:
+                raise exc.original
         else:
             raise exc
 

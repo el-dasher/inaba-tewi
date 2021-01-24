@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Union
 
 import discord
@@ -37,10 +36,11 @@ class Recent(commands.Cog):
         if not await default_user_exists_check(ctx, osu_droid_user):
             return None
 
-        recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=datetime.utcnow())
-
         recent_play: OsuDroidPlay = osu_droid_user.recent_play
+
         recent_beatmap: Beatmap = (await OSU_PPY_API.get_beatmap(h=recent_play.hash))
+
+        recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=recent_play.date)
 
         # Play data adjusted to osu!droid values, e.g: nerfs, bpp
         bumped_play: BumpedOsuPlay = await new_bumped_osu_play(
@@ -80,7 +80,7 @@ class Recent(commands.Cog):
 
         await ctx.reply(content=ctx.author.mention, embed=recent_embed)
 
-        await clear_previous_calc_from_db_in_one_minute(ctx.channel.id)
+        await clear_previous_calc_from_db_in_one_minute(ctx)
 
 
 def setup(bot):

@@ -1,6 +1,6 @@
 from utils.env_setup import setup_env
 
-DEBUG: bool = False
+DEBUG: bool = True
 setup_env()
 
 DEFAULT_BOT_PREFIXES: tuple
@@ -10,7 +10,7 @@ else:
     DEFAULT_BOT_PREFIXES = ('tewi!', 'uwu!')
 
 _RAW_COGS: tuple = (
-    'osu.droid.userbind', 'osu.droid.profile', 'osu.droid.recent', 'osu.droid.beatmap_calc',
+    'osu.droid.userbind', 'osu.droid.profile', 'osu.droid.recent', 'osu.droid.beatmap_calc', 'osu.droid.compare',
     'handlers.error_handler',
     'tools.avatar'
 )

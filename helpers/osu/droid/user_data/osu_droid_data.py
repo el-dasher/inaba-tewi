@@ -49,6 +49,7 @@ class OsuDroidProfile:
         self._country: Union[str, None] = None
         self._recent_play: Union[OsuDroidPlay, None] = None
         self._recent_plays: Union[Tuple[OsuDroidPlay], None] = None
+        self._bad_request: dict = {}
 
     async def setup(self) -> dict:
         async with aiohttp.ClientSession() as session:
@@ -59,7 +60,7 @@ class OsuDroidProfile:
                                            self._player_html.find_all("span", class_="pull-right")[-5:]))
             if self.needs_pp_data:
                 async with session.get(self.pp_profile_url, headers=my_http_headers) as res:
-                    bad_request: dict = {
+                    self._bad_request: dict = {
                         "uid": 0,
                         "username": "None",
                         "list": []
@@ -70,7 +71,7 @@ class OsuDroidProfile:
                         pass
                     else:
                         self.pp_board_is_offline = False
-                        self._user_pp_data_json = bad_request
+                        self._user_pp_data_json = self._bad_request
 
                         if 'data' in pp_board_res:
                             self._user_pp_data_json = pp_board_res['data']
@@ -90,12 +91,7 @@ class OsuDroidProfile:
             raise MissingRequiredArgument(missed_arg_name=self._needs_pp_data_string)
 
         if 'pp' not in self._user_pp_data_json:
-            self._user_pp_data_json = {
-                'pp': {
-                    'total': 'OFF',
-                    'list': []
-                }
-            }
+            self._user_pp_data_json = self._bad_request
 
     def _player_html_required(self):
         if not self.needs_player_html:
