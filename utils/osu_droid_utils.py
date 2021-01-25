@@ -100,7 +100,7 @@ def get_default_beatmap_stats_string(
     extra_information: str = ""
 
     if beatmap_data_from_api:
-        approved_state: str = beatmap_data_from_api.approved
+        approved_state: int = int(beatmap_data_from_api.approved)
         approved_strs: list = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
         
         approved_str: str = approved_strs[approved_state]
