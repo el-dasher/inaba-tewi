@@ -49,6 +49,8 @@ class OsuDroidProfile:
         self._country: Union[str, None] = None
         self._recent_play: Union[OsuDroidPlay, None] = None
         self._recent_plays: Union[Tuple[OsuDroidPlay], None] = None
+        self._fast_username: Union[str, None] = None
+
         self._bad_request: dict = {}
 
     async def setup(self) -> dict:
@@ -138,6 +140,15 @@ class OsuDroidProfile:
         return self._username
 
     @property
+    def fast_username(self) -> str:
+        self._pp_data_required()
+
+        if not self._fast_username:
+            self._fast_username = self.pp_data['username']
+
+        return self._fast_username
+
+    @property
     def rank_score(self) -> str:
         self._player_html_required()
 
@@ -202,9 +213,15 @@ class OsuDroidProfile:
 
     @property
     def exists(self) -> bool:
-        self._player_html_required()
+        exists: bool = False
 
-        return self.username != ""
+        if self._player_html or self._user_pp_data_json:
+            if self._fast_username != "" or self.username != "":
+                exists = True
+        else:
+            raise AttributeError
+
+        return exists
 
     @property
     def recent_plays(self):

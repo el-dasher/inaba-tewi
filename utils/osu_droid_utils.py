@@ -34,6 +34,7 @@ def default_total_dpp(osu_droid_user: OsuDroidProfile) -> Union[str, None]:
 
 async def default_user_exists_check(ctx: commands.Context, osu_droid_user: OsuDroidProfile) -> bool:
     user_exists: bool = False
+
     if osu_droid_user.exists:
         user_exists = True
     else:
