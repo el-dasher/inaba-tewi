@@ -115,6 +115,7 @@ def get_default_beatmap_stats_string(
             approved_str = "Qualified"
         elif approved_state == "4":
             approved_str = "Loved"
+        
         extra_information = (
             f"Circles: {bumped_osu_play.amount_circle} - Sliders: {bumped_osu_play.amount_slider}    "
             f"Spinners: {bumped_osu_play.amount_spinner}                                           \n"
@@ -126,7 +127,7 @@ def get_default_beatmap_stats_string(
     default_beatmap_stats_string: str = (
         ">>> "
         "**"
-        f"CS: {bumped_osu_play.base_cs:.2f} | OD: {bumped_osu_play.base_od:.2f}    "
+        f"CS: {bumped_osu_play.base_cs:.2f} | OD: {bumped_osu_play.base_od:.2f} | "
         f"AR:  {bumped_osu_play.base_ar:.2f} | HP: {bumped_osu_play.base_hp:.2f} \n"
         f"BPM: {bumped_osu_play.bpm:.2f} | Length: {total_length}                \n"
         f"{extra_information}"
