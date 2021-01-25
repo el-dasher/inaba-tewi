@@ -44,11 +44,13 @@ class Compare(commands.Cog):
 
         user_plays: List[dict] = osu_droid_user['user_plays']
 
-        try:
-            play_info: Union[tuple, dict] = tuple(
-                filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
-            )[0]
-        except TypeError:
+        found_plays: Union[tuple, dict] = tuple(
+            filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
+        )
+
+        if found_plays:
+            play_info = found_plays[0]
+        else:
             return await ctx.reply(
                 "❎ **| Eu não consegui achar a sua play nesse mapa na base de dados,"
                 " talvez seja por que o mapa não está submitado no site do peppy?**")
@@ -62,11 +64,12 @@ class Compare(commands.Cog):
         play_stats: OsuStats = bumped_play.getStats(Mods=play_info['mods'])
         play_diff: float = play_stats.total
 
-        compare_embed: discord.Embed = discord.Embed(timestamp=play_info['date'])
+        compare_embed: discord.Embed = discord.Embed(timestamp=play_info['date'], color=ctx.author.color)
 
         compare_embed.set_author(
             url=beatmap_data_from_api.url,
-            name=f"{beatmap_data_from_api.title} {play_info['mods']} - {play_diff:.2f}★",
+            name=f"{beatmap_data_from_api.title} [{beatmap_data_from_api.version}]"
+                 f" {play_info['mods']} - {play_diff:.2f}★",
             icon_url=osu_droid_user['avatar']
         )
 

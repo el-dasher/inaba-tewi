@@ -84,7 +84,8 @@ class MapCalc(commands.Cog):
         calc_embed = setup_generic_embed(self.bot, ctx.author)
 
         calc_embed.set_author(
-            name=f"{calc_beatmap.title} +{mods} {misses}m {float(accuracy):.2f}% {speed_multiplier}x",
+            name=f"{calc_beatmap.title} [{beatmap_data_from_osu_api.version}]"
+                 f" +{mods} {misses}m {float(accuracy):.2f}% {speed_multiplier}x",
             url=beatmap_data_from_osu_api.url
         )
 
@@ -126,12 +127,14 @@ class MapCalc(commands.Cog):
         params = list(params)
 
         if ctx.invoked_with == "prevcalc":
-            try:
-                previous_beatmap_id = RECENT_CALC_DOCUMENT.get().to_dict()[f"{ctx.channel.id}"]
-            except KeyError:
-                return await ctx.reply(BEATMAP_NOT_BEING_TALKED)
+            previous_beatmaps = RECENT_CALC_DOCUMENT.get().to_dict()
+
+            if f"{ctx.channel.id}" in previous_beatmaps:
+                previous_beatmap_id = previous_beatmaps[f"{ctx.channel.id}"]
             else:
-                params.insert(0, previous_beatmap_id)
+                return await ctx.reply(BEATMAP_NOT_BEING_TALKED)
+
+            params.insert(0, previous_beatmap_id)
 
         calc_embed = await self.calculate_main(ctx, params)
 
