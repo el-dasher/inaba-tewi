@@ -55,7 +55,11 @@ async def default_search_for_uid_in_db_handling(ctx: commands.Context, uid: Unio
 
     if not uid:
         user_to_search_in_db = ctx.author
+
         droid_user_id = (await get_droid_user_id_in_db(user_to_search_in_db))['uid']
+
+        if not droid_user_id:
+            await ctx.reply(USER_NOT_BINDED)
     else:
         if isinstance(user_to_search_in_db, discord.Member):
             response_from_db = (await get_droid_user_id_in_db(user_to_search_in_db))
@@ -101,7 +105,7 @@ def get_default_beatmap_stats_string(
 
     if beatmap_data_from_api:
         approved_state: int = int(beatmap_data_from_api.approved)
-        approved_strs: list = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
+        approved_strs: tuple = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
         
         approved_str: str = approved_strs[approved_state]
 

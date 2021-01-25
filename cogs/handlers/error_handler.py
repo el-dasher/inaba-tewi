@@ -28,12 +28,17 @@ class ErrorHandler(commands.Cog):
             )
 
         elif hasattr(exc, "original"):
-
-            if "ContentTypeError" in exc.args[0]:
-                return await ctx.reply(
-                    "❎ **| Não foi possivel adquirir uma resposta do site"
-                    " ou API necessária para que este comando funcione!"
-                )
+            args_0: str = exc.args[0]
+            if "ContentTypeError" or "ClientConnectorError" in args_0:
+                if "ContentTypeError" in args_0:
+                    return await ctx.reply(
+                        "❎ **| Não foi possivel adquirir uma resposta do site"
+                        " ou API necessária para que este comando funcione!"
+                    )
+                if "ClientConnectorError" in args_0:
+                    return await ctx.reply(
+                        "❎ **| Não foi possível se conectar ao site ou API necessária para que esse comando funcione!**"
+                    )
             else:
                 raise exc.original
         else:

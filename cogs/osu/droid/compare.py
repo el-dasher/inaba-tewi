@@ -16,13 +16,12 @@ from utils.osu_droid_utils import (
 from utils.osuapi import OSU_PPY_API
 
 
-
 class Compare(commands.Cog):
     def __init__(self, bot: discord.ext.commands.Bot):
         self.bot = bot
 
     @commands.command(name="compare", aliases=["c", "comparison"])
-    async def compare(self, ctx: commands.Context):
+    async def compare(self, ctx: commands.Context) -> Union[discord.Message, None]:
         current_recent_play: dict = RECENT_CALC_DOCUMENT.get().to_dict()
         current_users: dict = USERS_DOCUMENT.get().to_dict()
 
@@ -44,9 +43,8 @@ class Compare(commands.Cog):
 
         user_plays: List[dict] = osu_droid_user['user_plays']
 
-        found_plays: Union[tuple, dict] = filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
-        
-        
+        found_plays: filter = filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
+
         play_info = next(found_plays, None)
         
         if not play_info:
@@ -92,7 +90,6 @@ class Compare(commands.Cog):
         )
 
         await ctx.reply(content=ctx.author.mention, embed=compare_embed)
-
         await clear_previous_calc_from_db_in_one_minute(ctx)
 
 

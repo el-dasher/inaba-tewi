@@ -20,7 +20,7 @@ class MapCalc(commands.Cog):
     async def calculate_main(
             self, ctx: Union[discord.Message, commands.Context],
             *params: Union[Tuple[Union[int, str]], List[Union[int, str]]],
-    ):
+    ) -> None:
 
         params = params[0]
         beatmap_id = params[0]
@@ -143,7 +143,7 @@ class MapCalc(commands.Cog):
             await clear_previous_calc_from_db_in_one_minute(ctx)
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
         if not DEBUG:
             if message.content.startswith("https://osu.ppy.sh/"):
                 beatmap_base_urls: tuple = (
