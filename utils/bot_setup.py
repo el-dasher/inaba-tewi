@@ -12,6 +12,7 @@ else:
 
 _RAW_COGS: tuple = (
     'osu.droid.userbind', 'osu.droid.profile', 'osu.droid.recent', 'osu.droid.beatmap_calc', 'osu.droid.compare',
+    'osu.droid.submit',
     'handlers.error_handler',
     'tools.avatar'
 )

@@ -1,16 +1,18 @@
 import asyncio
 import datetime
-from typing import Union
+from typing import Union, List, Tuple, Dict, Any
 
 import aioosuapi
 import discord
 from discord.ext import commands
 from firebase_admin.firestore import firestore
 
+from utils.osuapi import OSU_PPY_API
+
 from helpers.osu.beatmaps.calculator import BumpedOsuPlay
-from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
+from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile, OsuDroidPlay
 from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
-from utils.database import BINDED_DOCUMENT, RECENT_CALC_DOCUMENT
+from utils.database import BINDED_DOCUMENT, RECENT_CALC_DOCUMENT, USERS_DOCUMENT
 
 
 def default_total_dpp(osu_droid_user: OsuDroidProfile) -> Union[str, None]:
@@ -138,3 +140,73 @@ async def clear_previous_calc_from_db_in_one_minute(ctx: Union[commands.Context,
     await asyncio.sleep(60)
 
     RECENT_CALC_DOCUMENT.update({f"{ctx.channel.id}": firestore.DELETE_FIELD})
+
+
+async def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
+    new_user_plays: Union[Tuple[OsuDroidPlay], List[Dict[str, Any]]] = osu_droid_user_.recent_plays
+
+    new_user_plays_info: List[Dict[str, any]] = []
+
+    for play in new_user_plays:
+        play_beatmap = await OSU_PPY_API.get_beatmap(h=play.hash)
+
+        if play_beatmap is None:
+            continue
+
+        new_user_play = {
+            "title": play.title,
+            "score": play.score,
+            "accuracy": play.accuracy,
+            "misses": play.misses,
+            "mods": play.mods,
+            "max_combo": play.max_combo,
+            "rank_url": play.rank_url,
+            "hash": play.hash,
+            "date": play.date,
+            "beatmap_id": play_beatmap.beatmap_id
+        }
+
+        if new_user_play not in new_user_plays_info:
+            new_user_plays_info.append(new_user_play)
+
+    old_users_data: dict = USERS_DOCUMENT.get().to_dict()
+
+    old_user_plays: List[dict] = []
+
+    user_id_str: str = f"{osu_droid_user_.uid}"
+
+    if user_id_str in old_users_data:
+        old_user_data = old_users_data[user_id_str]
+        if "user_plays" in old_user_data:
+            # So duplicated plays don't get uploaded to the db
+            old_user_plays = list(
+                map(lambda a: a if a['hash'] not in list(map(lambda b: b['hash'], new_user_plays_info)) else None,
+                    old_user_data['user_plays'])
+            )
+
+            # Filters the None values caused by the play being a duplicate
+            old_user_plays = list(filter(lambda a: a is not None, old_user_plays))
+
+    user_plays = []
+
+    user_plays.extend(new_user_plays_info)
+    user_plays.extend(old_user_plays)
+
+    droid_user_uid: str = f"{osu_droid_user_.uid}"
+
+    USERS_DOCUMENT.set({droid_user_uid: {"user_plays": firestore.DELETE_FIELD}}, merge=True)
+
+    USERS_DOCUMENT.set(
+        {
+            droid_user_uid: {
+                "username": osu_droid_user_.username,
+                "rank_score": osu_droid_user_.rank_score,
+                "total_score": osu_droid_user_.total_score,
+                "accuracy": osu_droid_user_.accuracy,
+                "play_count": osu_droid_user_.play_count,
+                "avatar": osu_droid_user_.avatar,
+                "total_dpp": osu_droid_user_.total_dpp,
+                "user_plays": user_plays
+            }
+        }, merge=True
+    )

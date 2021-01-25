@@ -149,17 +149,19 @@ class MapCalc(commands.Cog):
                     "https://osu.ppy.sh/b/"
                 )
 
-                base_url = message.content.split("/")
+                base_url_list: List[str] = message.content.split("/")
 
-                if len(base_url) >= 5:
-                    base_url[1] = "//"
-                    base_url[-1] = "/"
-                    base_url[3] = f"/{base_url[3]}"
+                if len(base_url_list) >= 5:
+                    if base_url_list[-2].endswith("#osu"):
+                        del base_url_list[-2]
+
+                    base_url_list[1] = "//"
+                    base_url_list[-1] = "/"
+                    base_url_list[3] = f"/{base_url_list[3]}"
                 else:
                     return None
 
-                base_url = "".join(base_url)
-
+                base_url = "".join(base_url_list)
                 if base_url in beatmap_base_urls:
                     params: list = message.content.split()
                     calc_embed = await self.calculate_main(message, params)

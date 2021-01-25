@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 
 import aioosuapi
 import discord
@@ -14,6 +14,7 @@ from utils.osu_droid_utils import (
     clear_previous_calc_from_db_in_one_minute
 )
 from utils.osuapi import OSU_PPY_API
+
 
 
 class Compare(commands.Cog):
@@ -41,17 +42,16 @@ class Compare(commands.Cog):
         else:
             return await ctx.reply(f"❎ **| Você não submitou suas plays a base de dados, use `{ctx.prefix}submit`")
 
-        user_plays = osu_droid_user['user_plays']
+        user_plays: List[dict] = osu_droid_user['user_plays']
 
-        play_info: Union[tuple, dict] = tuple(filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays))
-
-        print("ORIGINAL", play_info)
-        if len(play_info) > 0:
-            play_info = play_info[-1]
-        else:
-            return await ctx.reply("❎ **| Eu não consegui achar a sua play nesse mapa na base de dados...")
-
-        print(play_info)
+        try:
+            play_info: Union[tuple, dict] = tuple(
+                filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
+            )[0]
+        except TypeError:
+            return await ctx.reply(
+                "❎ **| Eu não consegui achar a sua play nesse mapa na base de dados,"
+                " talvez seja por que o mapa não está submitado no site do peppy?**")
 
         beatmap_data_from_api: aioosuapi.Beatmap = await OSU_PPY_API.get_beatmap(h=play_info['hash'])
         bumped_play: BumpedOsuPlay = await new_bumped_osu_play(
@@ -62,7 +62,6 @@ class Compare(commands.Cog):
         play_stats: OsuStats = bumped_play.getStats(Mods=play_info['mods'])
         play_diff: float = play_stats.total
 
-        print(play_info)
         compare_embed: discord.Embed = discord.Embed(timestamp=play_info['date'])
 
         compare_embed.set_author(
