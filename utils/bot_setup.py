@@ -1,10 +1,11 @@
 from utils.env_setup import setup_env
+from typing import Tuple
 
 # DEBUG is here so some behaviours are changed while debugging
 DEBUG: bool = False
 setup_env()
 
-DEFAULT_BOT_PREFIXES: tuple
+DEFAULT_BOT_PREFIXES: Tuple[str, ...]
 if DEBUG:
     DEFAULT_BOT_PREFIXES = ('d!', 'owo!')
 else:

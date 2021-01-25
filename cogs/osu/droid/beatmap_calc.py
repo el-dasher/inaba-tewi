@@ -146,13 +146,13 @@ class MapCalc(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         if not DEBUG:
             if message.content.startswith("https://osu.ppy.sh/"):
-                beatmap_base_urls: tuple = (
+                beatmap_base_urls: Tuple[str, ...] = (
                     "https://osu.ppy.sh/beatmapsets/",
                     "https://osu.ppy.sh/beatmaps/",
                     "https://osu.ppy.sh/b/"
                 )
 
-                base_url_list: List[str] = message.content.split("/")
+                base_url_list: List[str, ...] = message.content.split("/")
 
                 if len(base_url_list) >= 5:
                     if base_url_list[-2].endswith("#osu"):

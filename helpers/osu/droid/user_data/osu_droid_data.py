@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from os import getenv
-from typing import Union, Tuple
+from typing import Union, Tuple, Dict, List
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -26,7 +26,7 @@ class OsuDroidProfile:
         self.uid: int = uid
         self._user_pp_data_json: Union[None, dict] = None
         self._player_html: Union[None, BeautifulSoup] = None
-        self._stats: Union[None, list] = None
+        self._stats: Union[None, List[str, ...]] = None
 
         self._needs_pp_data_string: str = 'needs_pp_data'
         self._needs_player_html_string: str = 'needs_player_html'
@@ -48,7 +48,7 @@ class OsuDroidProfile:
         self._avatar: Union[str, None] = None
         self._country: Union[str, None] = None
         self._recent_play: Union[OsuDroidPlay, None] = None
-        self._recent_plays: Union[Tuple[OsuDroidPlay], None] = None
+        self._recent_plays: Union[Tuple[OsuDroidPlay, ...], None] = None
         self._fast_username: Union[str, None] = None
 
         self._bad_request: dict = {}
@@ -62,7 +62,7 @@ class OsuDroidProfile:
                                            self._player_html.find_all("span", class_="pull-right")[-5:]))
             if self.needs_pp_data:
                 async with session.get(self.pp_profile_url, headers=my_http_headers) as res:
-                    self._bad_request: dict = {
+                    self._bad_request: Dict[str, int, str, list] = {
                         "uid": 0,
                         "username": "None",
                         "list": []
@@ -224,7 +224,7 @@ class OsuDroidProfile:
         return exists
 
     @property
-    def recent_plays(self):
+    def recent_plays(self) -> tuple:
         self._player_html_required()
 
         if not self._recent_plays:

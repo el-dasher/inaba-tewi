@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-from typing import Union, List, Tuple, Dict, Any
+from typing import Union, List, Tuple, Dict
 
 import aioosuapi
 import discord
@@ -106,7 +106,7 @@ def get_default_beatmap_stats_string(
 
     if beatmap_data_from_api:
         approved_state: int = int(beatmap_data_from_api.approved)
-        approved_strs: tuple = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
+        approved_strs: Tuple[str, ...] = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
         
         approved_str: str = approved_strs[approved_state]
 
@@ -138,9 +138,9 @@ async def clear_previous_calc_from_db_in_one_minute(ctx: Union[commands.Context,
 
 
 async def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
-    new_user_plays: Union[Tuple[OsuDroidPlay], List[Dict[str, Any]]] = osu_droid_user_.recent_plays
+    new_user_plays: Tuple[OsuDroidPlay, ...] = osu_droid_user_.recent_plays
 
-    new_user_plays_info: List[Dict[str, any]] = []
+    new_user_plays_info: List[Dict[str]] = []
 
     for play in new_user_plays:
         play_beatmap = await OSU_PPY_API.get_beatmap(h=play.hash)

@@ -41,7 +41,7 @@ class Compare(commands.Cog):
         else:
             return await ctx.reply(f"❎ **| Você não submitou suas plays a base de dados, use `{ctx.prefix}submit`")
 
-        user_plays: List[dict] = osu_droid_user['user_plays']
+        user_plays: List[dict, ...] = osu_droid_user['user_plays']
 
         found_plays: filter = filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
 
