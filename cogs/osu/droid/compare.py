@@ -44,13 +44,12 @@ class Compare(commands.Cog):
 
         user_plays: List[dict] = osu_droid_user['user_plays']
 
-        found_plays: Union[tuple, dict] = tuple(
-            filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
-        )
-
-        if found_plays:
-            play_info = found_plays[0]
-        else:
+        found_plays: Union[tuple, dict] = filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
+        
+        
+        play_info = next(found_plays, None)
+        
+        if not play_info:
             return await ctx.reply(
                 "❎ **| Eu não consegui achar a sua play nesse mapa na base de dados,"
                 " talvez seja por que o mapa não está submitado no site do peppy?**")
