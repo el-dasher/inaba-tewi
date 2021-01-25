@@ -101,21 +101,10 @@ def get_default_beatmap_stats_string(
 
     if beatmap_data_from_api:
         approved_state: str = beatmap_data_from_api.approved
-
-        approved_str = ""
-        if approved_state == "-1":
-            approved_str = "Graveyard"
-        elif approved_state == "0":
-            approved_str = "In-Progress"
-        elif approved_state == "1":
-            approved_str = "Ranked"
-        elif approved_state == "2":
-            approved_str = "Approved"
-        elif approved_state == "3":
-            approved_str = "Qualified"
-        elif approved_state == "4":
-            approved_str = "Loved"
+        approved_strs: list = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
         
+        approved_str: str = approved_strs[approved_state]
+
         extra_information = (
             f"Circles: {bumped_osu_play.amount_circle} - Sliders: {bumped_osu_play.amount_slider}    "
             f"Spinners: {bumped_osu_play.amount_spinner}                                           \n"
