@@ -63,7 +63,7 @@ class Compare(commands.Cog):
             ppv2_play: BumpedOsuPlay = await new_bumped_osu_play(
                 play_info['beatmap_id'], play_info['mods'], play_info['misses'],
                 play_info['accuracy'], play_info['max_combo'],
-                adjust_to_droid=False, beatmap_data_from_osu_api=beatmap_data_from_api
+                adjust_to_droid=False, beatmap_data_from_osu_api=beatmap_data_from_api, raw_str=bumped_play.raw_str
             )
 
             play_stats: OsuStats = ppv2_play.getStats(Mods=play_info['mods'])

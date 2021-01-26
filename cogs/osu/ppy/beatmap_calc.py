@@ -72,11 +72,11 @@ class MapCalc(commands.Cog):
             )
             max_values_with_calc_acc: BumpedOsuPlay = await new_bumped_osu_play(
                 beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
-                speed_multiplier, adjust_to_droid, beatmap_data_from_osu_api
+                speed_multiplier, adjust_to_droid, beatmap_data_from_osu_api, raw_str=calc_beatmap.raw_str
             )
             ppv2_calc: BumpedOsuPlay = await new_bumped_osu_play(
                 beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
-                speed_multiplier, False, beatmap_data_from_osu_api
+                speed_multiplier, False, beatmap_data_from_osu_api, raw_str=calc_beatmap.raw_str
             )
         except AttributeError:
             return await ctx.reply("❎ **| Ocorreu um erro ao calcular o beatmap")

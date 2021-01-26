@@ -10,7 +10,8 @@ class BumpedOsuPlay(oppadc.OsuMap):
     # The super class call is missed on purpouse, it gets called in "setup"
     def __init__(self, beatmap_id: Union[int, str], mods: str = "NM", misses: int = 0, accuracy: float = 100.00,
                  achieved_combo: int = None, speed_multiplier: float = 1.00,
-                 adjust_to_droid: bool = False, beatmap_data_from_osu_api: aioosuapi.Beatmap = None):
+                 adjust_to_droid: bool = False, beatmap_data_from_osu_api: aioosuapi.Beatmap = None,
+                 raw_str: Union[None, str] = None):
         """
         :param achieved_combo: the max_combo obtained on the play, defaults to beatmap max-combo
         :param accuracy: accuracy of the play
@@ -52,16 +53,19 @@ class BumpedOsuPlay(oppadc.OsuMap):
 
         self.bpm: Union[float, None] = None
         self.total_length: Union[float, None] = None
+        self.beatmap_osu: Union[str, None] = None
+        self.raw_str = raw_str
 
     async def setup(self) -> None:
+        if self.raw_str:
+            self.beatmap_osu = self.raw_str
+            self._beatmap_data = self.beatmap_osu
         async with aiohttp.ClientSession() as session:
             async with session.get(f"https://osu.ppy.sh/osu/{self.beatmap_id}", allow_redirects=True) as res:
-                beatmap_osu: str = await res.text()
+                self.beatmap_osu: str = await res.text()
+                self._beatmap_data = self.beatmap_osu
 
-                super().__init__(raw_str=beatmap_osu)
-
-                self._beatmap_data = beatmap_osu
-
+        super().__init__(raw_str=self.beatmap_osu)
         self._main()
 
     def _main(self):
@@ -147,10 +151,10 @@ async def new_bumped_osu_play(
         beatmap_id, mods: str = "NM", misses: int = 0, accuracy: float = 100.00,
         max_combo: int = None, custom_speed: float = 1.00,
         adjust_to_droid: bool = False,
-        beatmap_data_from_osu_api: aioosuapi.Beatmap = None
+        beatmap_data_from_osu_api: aioosuapi.Beatmap = None, raw_str: str = None
 ) -> BumpedOsuPlay:
     osu_droid_bumped_play: BumpedOsuPlay = BumpedOsuPlay(
-        beatmap_id, mods, misses, accuracy, max_combo, custom_speed, adjust_to_droid, beatmap_data_from_osu_api
+        beatmap_id, mods, misses, accuracy, max_combo, custom_speed, adjust_to_droid, beatmap_data_from_osu_api, raw_str
     )
     await osu_droid_bumped_play.setup()
 

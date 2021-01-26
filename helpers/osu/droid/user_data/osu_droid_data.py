@@ -12,11 +12,6 @@ from helpers.osu.droid.user_data.exceptions import MissingRequiredArgument
 
 _DPP_BOARD_API_KEY: str = getenv('DPP_BOARD_API_KEY')
 
-headers: Dict[str, str] = {
- 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-               ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
-}
-
 
 class OsuDroidProfile:
     def __init__(self, uid: int, needs_player_html: bool = False, needs_pp_data: bool = False):
@@ -56,12 +51,12 @@ class OsuDroidProfile:
     async def setup(self) -> dict:
         async with aiohttp.ClientSession() as session:
             if self.needs_player_html:
-                async with session.get(self.main_profile_url, headers=headers) as res:
+                async with session.get(self.main_profile_url) as res:
                     self._player_html = BeautifulSoup(await res.text(), features="html.parser")
                     self._stats = list(map(lambda a: a.text,
                                            self._player_html.find_all("span", class_="pull-right")[-5:]))
             if self.needs_pp_data:
-                async with session.get(self.pp_profile_url, headers=headers) as res:
+                async with session.get(self.pp_profile_url) as res:
                     self._bad_request: Dict[str, int, str, list] = {
                         "uid": 0,
                         "username": "None",

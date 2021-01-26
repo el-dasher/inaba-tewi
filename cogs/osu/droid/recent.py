@@ -32,6 +32,7 @@ class Recent(commands.Cog):
                 droid_user_id, needs_player_html=True, needs_pp_data=True
             )
 
+            import time
             if not droid_user_id:
                 return None
             if not await default_user_exists_check(ctx, osu_droid_user):
@@ -58,7 +59,7 @@ class Recent(commands.Cog):
                 ppv2_play = await new_bumped_osu_play(
                     recent_beatmap.beatmap_id, recent_play.mods, recent_play.misses,
                     recent_play.accuracy, recent_play.max_combo, adjust_to_droid=False,
-                    beatmap_data_from_osu_api=recent_beatmap
+                    beatmap_data_from_osu_api=recent_beatmap, raw_str=bumped_play.raw_str
                 )
             except AttributeError:
                 play_diff: Union[float, None] = None
