@@ -27,9 +27,7 @@ class PPCheck(commands.Cog):
         droid_user_total_dpp: Union[str, None] = default_total_dpp(osu_droid_user)
         ppcheck_embed.add_field(name="Informações", value=f">>> **Total DPP: {droid_user_total_dpp}**", inline=False)
 
-        if page_number == 0:
-            page_number = 1
-        elif page_number < 0:
+        if page_number < 0:
             page_number = len(osu_droid_user.pp_data['pp']['list']) - abs(page_number)
 
         for i, play in enumerate(plays):
@@ -40,7 +38,7 @@ class PPCheck(commands.Cog):
                 play_mods_str: str = f"+{play_mods}"
 
             ppcheck_embed.add_field(
-                name=f"{page_number + i} - {play['title']} {play_mods_str}",
+                name=f"{page_number + i + 1} - {play['title']} {play_mods_str}",
                 value=f">>> ```{play['combo']}x | {play['accuracy']}% | {play['miss']} misses | {play['pp']}pp```",
                 inline=False
             )
@@ -88,26 +86,20 @@ class PPCheck(commands.Cog):
                 await ppcheck_msg.clear_reactions()
                 return None
             else:
+
                 # Changes the page of the ppcheck based if it's the first reaction or other
 
-                zero_increase: int = -6
-                other_increase: int = -5
-                if valid_reaction.emoji == arrows[2]:
-                    zero_increase = +6
-                    other_increase = +5
-
-                if valid_reaction.emoji == arrows[0] or valid_reaction.emoji == arrows[3]:
-                    if valid_reaction.emoji == arrows[0]:
-                        ppcheck_page = 0
-                    elif valid_reaction.emoji == arrows[3]:
-                        ppcheck_page = -6
+                decrease_increase_by: int = 5
+                if valid_reaction.emoji == arrows[0]:
+                    ppcheck_page = 0
+                elif valid_reaction.emoji == arrows[1]:
+                    ppcheck_page -= decrease_increase_by
+                elif valid_reaction.emoji == arrows[2]:
+                    ppcheck_page += decrease_increase_by
                 else:
-                    if ppcheck_page == 0:
-                        ppcheck_page += zero_increase
-                    else:
-                        ppcheck_page += other_increase
+                    ppcheck_page = -decrease_increase_by
 
-                current_plays: List[dict, ...] = pp_plays[ppcheck_page:][:5]
+                current_plays: List[dict, ...] = pp_plays[ppcheck_page:][:decrease_increase_by]
 
                 ppcheck_embed: discord.Embed = await self.new_ppcheck_embed(
                     ctx, current_plays, osu_droid_user, ppcheck_page

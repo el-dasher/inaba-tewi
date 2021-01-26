@@ -82,8 +82,5 @@ class UserBind(commands.Cog):
         return await self.bind_user(ctx, member_to_bind=member, osu_droid_user_=osu_droid_user, force_bind=True)
 
 
-
-
-
 def setup(bot):
     bot.add_cog(UserBind(bot))
