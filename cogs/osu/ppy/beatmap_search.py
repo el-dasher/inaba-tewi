@@ -36,7 +36,7 @@ class BeatmapSearch(commands.Cog):
                 download_str: str = f"**Download**: [osu - download](http://osu.ppy.sh/beatmapsets/{beatmap['sid']})\n"
 
             maps_embed.add_field(
-                name=f"{page_number + i + 1} - {beatmap['artist']} - {beatmap['title']} ({beatmap['creator']}",
+                name=f"{page_number + i + 1} - {beatmap['artist']} - {beatmap['title']} ({beatmap['creator']})",
                 value=f">>> {download_str}**Last update**: {last_update} | {approved_str} | "
                       f"**❤ {beatmap['favourite_count']:,} - ➡ {beatmap['play_count']:,}**",
                 inline=False
