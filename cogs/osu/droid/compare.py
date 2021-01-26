@@ -53,15 +53,16 @@ class Compare(commands.Cog):
                 " talvez seja por que o mapa não está submitado no site do peppy?**")
 
         beatmap_data_from_api: aioosuapi.Beatmap = await OSU_PPY_API.get_beatmap(h=play_info['hash'])
-
+        
         bumped_play: BumpedOsuPlay = await new_bumped_osu_play(
             play_info['beatmap_id'], play_info['mods'], play_info['misses'],
-            play_info['accuracy'], play_info['max_combo'], 1.00, True, beatmap_data_from_api
+            play_info['accuracy'], play_info['max_combo'],
+            adjust_to_droid=True, beatmap_data_from_osu_api=beatmap_data_from_api
         )
-
         ppv2_play: BumpedOsuPlay = await new_bumped_osu_play(
             play_info['beatmap_id'], play_info['mods'], play_info['misses'],
-            play_info['accuracy'], play_info['max_combo'], 1.00, False, beatmap_data_from_api
+            play_info['accuracy'], play_info['max_combo'],
+            adjust_to_droid=False, beatmap_data_from_osu_api=beatmap_data_from_api
         )
 
         play_stats: OsuStats = ppv2_play.getStats(Mods=play_info['mods'])
@@ -71,8 +72,7 @@ class Compare(commands.Cog):
 
         compare_embed.set_author(
             url=beatmap_data_from_api.url,
-            name=f"{beatmap_data_from_api.title} [{beatmap_data_from_api.version}]"
-                 f" {play_info['mods']} - {play_diff:.2f}★",
+            name=f"{play_info['title']} +{play_info['mods']} - {play_diff:.2f}★",
             icon_url=osu_droid_user['avatar']
         )
 
