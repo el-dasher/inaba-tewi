@@ -3,7 +3,7 @@ from typing import Tuple
 from utils.env_setup import setup_env
 
 # DEBUG is here so some behaviours are changed while debugging
-DEBUG: bool = True
+DEBUG: bool = False
 setup_env()
 
 DEFAULT_BOT_PREFIXES: Tuple[str, ...]

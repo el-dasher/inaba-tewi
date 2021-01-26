@@ -2,6 +2,7 @@ from typing import Union, List
 
 import aioosuapi
 import discord
+import oppadc
 from discord.ext import commands
 from oppadc.osustats import OsuStats
 
@@ -60,13 +61,9 @@ class Compare(commands.Cog):
                 play_info['accuracy'], play_info['max_combo'],
                 adjust_to_droid=True, beatmap_data_from_osu_api=beatmap_data_from_api
             )
-            ppv2_play: BumpedOsuPlay = await new_bumped_osu_play(
-                play_info['beatmap_id'], play_info['mods'], play_info['misses'],
-                play_info['accuracy'], play_info['max_combo'],
-                adjust_to_droid=False, beatmap_data_from_osu_api=beatmap_data_from_api, raw_str=bumped_play.raw_str
-            )
-
-            play_stats: OsuStats = ppv2_play.getStats(Mods=play_info['mods'])
+            ppv2_map: oppadc.OsuMap = bumped_play.original
+            ppv2_calc_pp: oppadc.osumap.OsuPP = ppv2_map.getPP(Mods=play_info['mods'])
+            play_stats: OsuStats = ppv2_map.getStats(Mods=play_info['mods'])
             play_diff: float = play_stats.total
 
             compare_embed: discord.Embed = discord.Embed(timestamp=play_info['date'], color=ctx.author.color)
@@ -84,7 +81,7 @@ class Compare(commands.Cog):
                 name=f"Dados da play do(a) {osu_droid_user['username']}",
                 value=">>> "
                       "**"
-                      f"BR_DPP: {bumped_play.raw_pp:.2f} | PPV2: {ppv2_play.raw_pp:.2f}\n"
+                      f"BR_DPP: {bumped_play.raw_pp:.2f} | PPV2: {ppv2_calc_pp.total_pp:.2f}\n"
                       f"Accuracy: {play_info['accuracy']:.2f}%\n"
                       f"Score: {play_info['score']:,}\n"
                       f"Combo: {play_info['max_combo']} / {bumped_play.maxCombo()}\n"

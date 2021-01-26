@@ -10,6 +10,8 @@ class ErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, exc: Exception) -> Union[Exception, discord.Message]:
+        print("ERROR")
+
         unexpected_error: bool = False
         unexpected_exception: Exception = exc
 
@@ -31,6 +33,7 @@ class ErrorHandler(commands.Cog):
             )
 
         elif hasattr(exc, "original"):
+            print(exc)
             args_0: str = exc.args[0]
             if "ContentTypeError" or "ClientConnectorError" in args_0:
                 if "ContentTypeError" in args_0:
@@ -49,7 +52,6 @@ class ErrorHandler(commands.Cog):
             unexpected_error = True
 
         if unexpected_error:
-            print("O")
             await ctx.reply("❎ **| Infelizmente occoreu um erro inesperado ao rodar esse comando...**")
             raise unexpected_exception
 

@@ -2,6 +2,7 @@ from typing import Union
 
 import aiohttp
 import aioosuapi
+from copy import deepcopy
 import oppadc
 
 
@@ -55,7 +56,7 @@ class BumpedOsuPlay(oppadc.OsuMap):
         self.total_length: Union[float, None] = None
         self.beatmap_osu: Union[str, None] = None
         self.raw_str = raw_str
-        self.diff_before_readjust: Union[oppadc.osumap.OsuDifficulty, None] = None
+        self.original: Union[oppadc.osumap, None] = None
 
     async def setup(self) -> None:
         if self.raw_str:
@@ -67,7 +68,8 @@ class BumpedOsuPlay(oppadc.OsuMap):
                 self._beatmap_data = self.beatmap_osu
 
         super().__init__(raw_str=self.beatmap_osu)
-        self.diff_before_readjust = self.getDifficulty(Mods=self.mods)
+        self.original: oppadc.OsuMap = oppadc.OsuMap(raw_str=self.beatmap_osu)
+
         self._main()
 
     def _main(self):

@@ -1,6 +1,7 @@
 from typing import Union
 
 import discord
+import oppadc
 from aioosuapi import Beatmap
 from discord.ext import commands
 from oppadc.osumap import OsuStats
@@ -45,7 +46,7 @@ class Recent(commands.Cog):
             recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=recent_play.date)
 
             bumped_play: Union[BumpedOsuPlay, None] = None
-            ppv2_play: Union[BumpedOsuPlay, None] = None
+            ppv2_play: Union[oppadc.OsuMap, None] = None
 
             bumped_play_max_combo_str: str = ""
             # The try except is here because, maybe the beatmap isn't uploaded on osu.ppy.sh
@@ -56,11 +57,8 @@ class Recent(commands.Cog):
                     recent_play.accuracy, recent_play.max_combo,
                     adjust_to_droid=True, beatmap_data_from_osu_api=recent_beatmap
                 )
-                ppv2_play = await new_bumped_osu_play(
-                    recent_beatmap.beatmap_id, recent_play.mods, recent_play.misses,
-                    recent_play.accuracy, recent_play.max_combo, adjust_to_droid=False,
-                    beatmap_data_from_osu_api=recent_beatmap, raw_str=bumped_play.raw_str
-                )
+                ppv2_play = bumped_play.original
+
             except AttributeError:
                 play_diff: Union[float, None] = None
             else:
@@ -89,10 +87,12 @@ class Recent(commands.Cog):
 
             br_dpp_str: str = ""
             ppv2_str: str = ""
+            ppv2_pp = ppv2_play.getPP(Mods=recent_play.mods)
+
             info_beatmap_str: str = "> ❎ **| Não encontrei o beatmap no site do ppy...**"
             if bumped_play and ppv2_play:
                 br_dpp_str = f"BR_DPP: {bumped_play.raw_pp:.2f}"
-                ppv2_str = f"PPV2: {ppv2_play.raw_pp:.2f}"
+                ppv2_str = f"PPV2: {ppv2_pp.total_pp:.2f}"
 
                 info_beatmap_str = get_default_beatmap_stats_string(bumped_play)
 

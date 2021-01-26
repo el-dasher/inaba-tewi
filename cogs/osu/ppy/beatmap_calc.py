@@ -3,6 +3,8 @@ from typing import Tuple, Union, List
 import aioosuapi
 import discord
 from discord.ext import commands
+import oppadc
+
 
 from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
 from utils.bot_defaults import setup_generic_embed
@@ -51,21 +53,21 @@ class MapCalc(commands.Cog):
                     mods = param.replace("+", "")
                 else:
                     param_to_int: str = param[:-1]
-
-                    if param_to_int.isnumeric():
-                        if param.endswith("m"):
-                            misses = int(param_to_int)
-                        elif param.endswith("x"):
-                            combo = int(param_to_int)
+                    if param.endswith("m"):
+                        misses = int(param_to_int)
+                    elif param.endswith("x"):
+                        combo = int(param_to_int)
                     else:
+                        param_to_float: str = param[:-1]
                         try:
-                            if param.endswith("%"):
-                                accuracy = float(param)
-                            elif param.endswith("s"):
-                                speed_multiplier = float(param)
+                            floating_param: float = float(param_to_float)
                         except ValueError:
                             continue
-
+                        else:
+                            if param.endswith("%"):
+                                accuracy = floating_param
+                            elif param.endswith("s"):
+                                speed_multiplier = floating_param
             try:
                 calc_beatmap: BumpedOsuPlay = await new_bumped_osu_play(
                     beatmap_id, mods, misses, accuracy, combo, speed_multiplier,
@@ -75,10 +77,7 @@ class MapCalc(commands.Cog):
                     beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
                     speed_multiplier, adjust_to_droid, beatmap_data_from_osu_api, raw_str=calc_beatmap.raw_str
                 )
-                ppv2_calc: BumpedOsuPlay = await new_bumped_osu_play(
-                    beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
-                    speed_multiplier, False, beatmap_data_from_osu_api, raw_str=calc_beatmap.raw_str
-                )
+                ppv2_calc: oppadc.osumap.OsuPP = calc_beatmap.original.getPP(Mods=mods)
             except AttributeError:
                 return await ctx.reply("❎ **| Ocorreu um erro ao calcular o beatmap")
 
@@ -93,7 +92,8 @@ class MapCalc(commands.Cog):
             calc_embed.set_thumbnail(url=beatmap_data_from_osu_api.thumbnail)
 
             raw_pp_str: str = (
-                f"PP RAW: {calc_beatmap.raw_pp:.2f} -({max_values_with_calc_acc.raw_pp:.2f}) | {ppv2_calc.raw_pp:.2f}\n"
+                f"PP RAW: {calc_beatmap.raw_pp:.2f} -({max_values_with_calc_acc.raw_pp:.2f}) |"
+                f" {ppv2_calc.total_pp:.2f}\n"
             )
 
             speed_pp_str: str = f"Speed PP: {calc_beatmap.speed_pp:.2f} | {ppv2_calc.speed_pp:.2f}\n"
