@@ -12,6 +12,7 @@ from discord.ext import commands
 
 from utils.bot_defaults import setup_generic_embed
 from utils.osu_ppy_and_droid_utils import get_approved_str
+from requests.utils import quote
 
 
 class BeatmapSearch(commands.Cog):
@@ -52,8 +53,10 @@ class BeatmapSearch(commands.Cog):
         if not query:
             return await ctx.reply("❎ **| Você esqueceu da sua query para eu pesquisar...**")
 
-        query: str = "_".join(query)
-        sayobot_url: str = f"https://api.sayobot.cn/beatmaplist?&T=4&L=100&M=1&K={query}"
+        query: str = " ".join(query)
+        encoded_query = quote(query)
+        
+        sayobot_url: str = f"https://api.sayobot.cn/beatmaplist?&T=4&L=100&M=1&K={encoded_query}"
 
         async with ctx.typing():
             async with aiohttp.ClientSession() as session:
@@ -62,7 +65,7 @@ class BeatmapSearch(commands.Cog):
                     if res_json['status'] == -1:
                         return await ctx.reply(
                             "❎ **| A sayobot retornou um erro, possivelmente porque"
-                            " o beatamp que você procura não existe....**"
+                            " o beatmap que você procura não existe....**"
                         )
                     found_maps: List[dict, ...] = res_json['data']
 
