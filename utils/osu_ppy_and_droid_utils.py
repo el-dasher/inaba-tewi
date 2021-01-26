@@ -91,7 +91,7 @@ async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int
             'in_db': user_in_db_,
         }
 
-    if str(discord_user.id) in current_binded_users:
+    if f"{discord_user.id}" in current_binded_users:
         user_in_db = True
         getted_user = current_binded_users[str(discord_user.id)]
 

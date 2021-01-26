@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile, new_osu_droid_profile
-from utils.osu_droid_utils import default_user_exists_check, submit_profile_to_db, default_search_for_uid_in_db_handling
+from utils.osu_ppy_and_droid_utils import default_user_exists_check, submit_profile_to_db, default_search_for_uid_in_db_handling
 
 
 class Submit(commands.Cog):

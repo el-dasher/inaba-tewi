@@ -5,7 +5,11 @@ from discord.ext.commands import Bot
 
 from utils import bot_setup
 
+import logging
+
 BOT_TOKEN: str = getenv('BOT_TOKEN')
+
+logging.basicConfig(level=logging.INFO)
 
 
 class InabaTewi(Bot):

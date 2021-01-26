@@ -9,7 +9,7 @@ from utils.bot_defaults import setup_generic_embed
 from utils.bot_setup import DEBUG
 from utils.const_responses import BEATMAP_NOT_BEING_TALKED
 from utils.database import RECENT_CALC_DOCUMENT
-from utils.osu_droid_utils import get_default_beatmap_stats_string, clear_previous_calc_from_db_in_one_minute
+from utils.osu_ppy_and_droid_utils import get_default_beatmap_stats_string, clear_previous_calc_from_db_in_one_minute
 from utils.osuapi import OSU_PPY_API
 
 

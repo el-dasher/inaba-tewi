@@ -8,7 +8,7 @@ from oppadc.osustats import OsuStats
 from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
 from utils.const_responses import BEATMAP_NOT_BEING_TALKED
 from utils.database import RECENT_CALC_DOCUMENT, USERS_DOCUMENT
-from utils.osu_droid_utils import (
+from utils.osu_ppy_and_droid_utils import (
     default_search_for_uid_in_db_handling,
     get_default_beatmap_stats_string,
     clear_previous_calc_from_db_in_one_minute
@@ -53,12 +53,18 @@ class Compare(commands.Cog):
                 " talvez seja por que o mapa não está submitado no site do peppy?**")
 
         beatmap_data_from_api: aioosuapi.Beatmap = await OSU_PPY_API.get_beatmap(h=play_info['hash'])
+
         bumped_play: BumpedOsuPlay = await new_bumped_osu_play(
             play_info['beatmap_id'], play_info['mods'], play_info['misses'],
             play_info['accuracy'], play_info['max_combo'], 1.00, True, beatmap_data_from_api
         )
 
-        play_stats: OsuStats = bumped_play.getStats(Mods=play_info['mods'])
+        ppv2_play: BumpedOsuPlay = await new_bumped_osu_play(
+            play_info['beatmap_id'], play_info['mods'], play_info['misses'],
+            play_info['accuracy'], play_info['max_combo'], 1.00, True, beatmap_data_from_api
+        )
+
+        play_stats: OsuStats = ppv2_play.getStats(Mods=play_info['mods'])
         play_diff: float = play_stats.total
 
         compare_embed: discord.Embed = discord.Embed(timestamp=play_info['date'], color=ctx.author.color)
@@ -71,18 +77,18 @@ class Compare(commands.Cog):
         )
 
         compare_embed.set_thumbnail(url=beatmap_data_from_api.thumbnail)
-        compare_embed.set_footer(text="\u200b", icon_url=play_info['rank_url'], )
+        compare_embed.set_footer(text="\u200b", icon_url=play_info['rank_url'])
 
         compare_embed.add_field(
             name=f"Dados da play do(a) {osu_droid_user['username']}",
             value=">>> "
                   "**"
-                  f"BR_DPP: {bumped_play.raw_pp:.2f}                           \n"
-                  f"Accuracy: {play_info['accuracy']:.2f}%                      \n"
-                  f"Score: {play_info['score']:,}                               \n"
-                  f"Combo: {play_info['max_combo']} / {bumped_play.maxCombo()}  \n"
-                  f"Misses: {play_info['misses']}                               \n"
-                  "**".strip()
+                  f"BR_DPP: {bumped_play.raw_pp:.2f} PPV2: {ppv2_play.raw_pp:.2f}\n"
+                  f"Accuracy: {play_info['accuracy']:.2f}%\n"
+                  f"Score: {play_info['score']:,}\n"
+                  f"Combo: {play_info['max_combo']} / {bumped_play.maxCombo()}\n"
+                  f"Misses: {play_info['misses']}\n"
+                  "**"
         )
 
         compare_embed.add_field(
