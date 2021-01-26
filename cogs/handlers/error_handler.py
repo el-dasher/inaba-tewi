@@ -10,6 +10,9 @@ class ErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, exc: Exception) -> Union[Exception, discord.Message]:
+        unexpected_error: bool = False
+        unexpected_exception: Exception = exc
+
         if isinstance(exc, commands.CommandNotFound):
             return await ctx.reply("❎ **| Eu não tenho esse comando atualmente, desculpa...**")
         elif isinstance(exc, commands.MemberNotFound):
@@ -32,17 +35,24 @@ class ErrorHandler(commands.Cog):
             if "ContentTypeError" or "ClientConnectorError" in args_0:
                 if "ContentTypeError" in args_0:
                     return await ctx.reply(
-                        "❎ **| Não foi possivel adquirir uma resposta do site"
-                        " ou API necessária para que este comando funcione!"
+                        "❎ **| Não foi possivel adquirir uma resposta adequada do site"
+                        " ou API necessária para que este comando funcione!**"
                     )
                 elif "ClientConnectorError" in args_0:
                     return await ctx.reply(
                         "❎ **| Não foi possível se conectar ao site ou API necessária para que esse comando funcione!**"
                     )
             else:
-                raise exc.original
+                unexpected_error = True
+                unexpected_exception = exc.original
         else:
-            raise exc
+            unexpected_error = True
+
+        if unexpected_error:
+            print("O")
+            await ctx.reply("❎ **| Infelizmente occoreu um erro inesperado ao rodar esse comando...**")
+            raise unexpected_exception
+
 
 
 def setup(bot):

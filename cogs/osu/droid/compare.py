@@ -50,7 +50,7 @@ class Compare(commands.Cog):
         if not play_info:
             return await ctx.reply(
                 "❎ **| Eu não consegui achar a sua play nesse mapa na base de dados,"
-                " talvez seja por que o mapa não está submitado no site do peppy?**")
+                " talvez seja por que o mapa não está submitado no site do ppy?**")
 
         beatmap_data_from_api: aioosuapi.Beatmap = await OSU_PPY_API.get_beatmap(h=play_info['hash'])
 

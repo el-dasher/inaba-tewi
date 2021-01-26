@@ -11,9 +11,10 @@ if DEBUG:
 else:
     DEFAULT_BOT_PREFIXES = ('tewi!', 'uwu!', 'i!')
 
-_RAW_COGS: tuple = (
-    'osu.droid.userbind', 'osu.droid.profile', 'osu.droid.recent', 'osu.droid.beatmap_calc', 'osu.droid.compare',
+_RAW_COGS: Tuple[str, ...] = (
+    'osu.droid.userbind', 'osu.droid.profile', 'osu.droid.recent', 'osu.droid.compare',
     'osu.droid.submit', 'osu.droid.ppcheck',
+    'osu.ppy.beatmap_calc', 'osu.ppy.beatmap_search',
     'handlers.error_handler',
     'tools.avatar'
 )

@@ -98,16 +98,22 @@ async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int
     return create_return_dict(getted_user, user_in_db)
 
 
+def get_approved_str(approved_state_str: str) -> str:
+    approved_state: int = int(approved_state_str)
+    approved_strs: Tuple[str, ...] = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
+
+    approved_str: str = approved_strs[approved_state]
+
+    return approved_str
+
+
 def get_default_beatmap_stats_string(
         bumped_osu_play: BumpedOsuPlay, beatmap_data_from_api: aioosuapi.Beatmap = None
 ) -> str:
     extra_information: str = ""
 
     if beatmap_data_from_api:
-        approved_state: int = int(beatmap_data_from_api.approved)
-        approved_strs: Tuple[str, ...] = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
-
-        approved_str: str = approved_strs[approved_state]
+        approved_str: str = get_approved_str(beatmap_data_from_api.approved)
 
         extra_information = (
             f"Circles: {bumped_osu_play.amount_circle} - Sliders: {bumped_osu_play.amount_slider}    "
