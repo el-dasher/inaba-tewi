@@ -4,7 +4,11 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile, new_osu_droid_profile
-from utils.osu_ppy_and_droid_utils import default_user_exists_check, submit_profile_to_db, default_search_for_uid_in_db_handling
+from utils.osu_ppy_and_droid_utils import (
+    default_user_exists_check,
+    submit_profile_to_db,
+    default_search_for_uid_in_db_handling
+)
 
 
 class Submit(commands.Cog):
@@ -20,13 +24,13 @@ class Submit(commands.Cog):
         )
 
         if await default_user_exists_check(ctx, osu_droid_user):
-
-            bot_submit_res: str = "✅ **| Os seus dados foram sequestrados por mim com sucesso!**"
-            if force_submit:
-                await ctx.reply("**Irei tentar sequestrar os dados dele!**")
-                bot_submit_res = "✅ **| Os dados dele foram sequestrados por mim com sucesso!**"
-            else:
-                await ctx.reply("**Irei tentar sequestrar seus dados!**")
+            async with ctx.typing():
+                bot_submit_res: str = "✅ **| Os seus dados foram sequestrados por mim com sucesso!**"
+                if force_submit:
+                    await ctx.reply("**Irei tentar sequestrar os dados dele!**")
+                    bot_submit_res = "✅ **| Os dados dele foram sequestrados por mim com sucesso!**"
+                else:
+                    await ctx.reply("**Irei tentar sequestrar seus dados!**")
 
             await submit_profile_to_db(osu_droid_user)
             await ctx.reply(bot_submit_res)

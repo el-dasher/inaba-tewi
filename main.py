@@ -1,11 +1,10 @@
+import logging
 from os import getenv
 
 import discord
 from discord.ext.commands import Bot
 
 from utils import bot_setup
-
-import logging
 
 BOT_TOKEN: str = getenv('BOT_TOKEN')
 

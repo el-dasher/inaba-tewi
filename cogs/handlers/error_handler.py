@@ -54,6 +54,5 @@ class ErrorHandler(commands.Cog):
             raise unexpected_exception
 
 
-
 def setup(bot):
     bot.add_cog(ErrorHandler(bot))

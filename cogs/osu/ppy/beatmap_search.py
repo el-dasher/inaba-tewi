@@ -2,14 +2,16 @@
 Literally a copy of rian8337's version but python tho
 """
 
-import discord
-from discord.ext import commands
-import aiohttp
-from typing import List, Tuple
-from utils.bot_defaults import setup_generic_embed
-from utils.osu_ppy_and_droid_utils import get_approved_str
 import asyncio
 from datetime import datetime
+from typing import List, Tuple
+
+import aiohttp
+import discord
+from discord.ext import commands
+
+from utils.bot_defaults import setup_generic_embed
+from utils.osu_ppy_and_droid_utils import get_approved_str
 
 
 class BeatmapSearch(commands.Cog):
@@ -44,7 +46,7 @@ class BeatmapSearch(commands.Cog):
 
         return maps_embed
 
-    @commands.command(name="beatmapsearch", aliases=("mapsearch", ))
+    @commands.command(name="beatmapsearch", aliases=("mapsearch",))
     async def mapsearch(self, ctx: commands.Context, *query):
         if not query:
             return await ctx.reply("❎ **| Você esqueceu da sua query para eu pesquisar...**")

@@ -17,12 +17,13 @@ class UserBind(commands.Cog):
             self, ctx: commands.Context, member_to_bind: discord.Member,
             osu_droid_user_: OsuDroidProfile, force_bind: bool = False
     ) -> discord.Message:
-        if await default_user_exists_check(ctx, osu_droid_user_):
-            bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
+        async with ctx.typing():
+            if await default_user_exists_check(ctx, osu_droid_user_):
+                bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
 
-            BINDED_DOCUMENT.set({f"{member_to_bind.id}": osu_droid_user_.uid}, merge=True)
+                BINDED_DOCUMENT.set({f"{member_to_bind.id}": osu_droid_user_.uid}, merge=True)
 
-            return await ctx.reply(ctx.author.mention, embed=bind_embed)
+        return await ctx.reply(ctx.author.mention, embed=bind_embed)
 
     def new_bind_embed(
             self, member_to_bind: discord.member, osu_droid_user_: OsuDroidProfile, force_bind: bool = False

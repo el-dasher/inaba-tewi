@@ -50,24 +50,25 @@ class PPCheck(commands.Cog):
     async def ppcheck(
             self, ctx: commands.Context, uid: Union[discord.Member, int] = None
     ) -> Union[discord.Message, None]:
-        droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
+        async with ctx.typing():
+            droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
 
-        if not droid_user_id:
-            return None
+            if not droid_user_id:
+                return None
 
-        osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(droid_user_id, needs_pp_data=True)
+            osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(droid_user_id, needs_pp_data=True)
 
-        if not await default_user_exists_check(ctx, osu_droid_user):
-            return None
+            if not await default_user_exists_check(ctx, osu_droid_user):
+                return None
 
-        ppcheck_page: int = 0
+            ppcheck_page: int = 0
 
-        pp_plays: List[dict, ...] = osu_droid_user.pp_data['pp']['list']
+            pp_plays: List[dict, ...] = osu_droid_user.pp_data['pp']['list']
 
-        current_plays: List[dict, ...] = pp_plays[ppcheck_page:5]
-        ppcheck_embed: discord.Embed = await self.new_ppcheck_embed(
-            ctx, current_plays, osu_droid_user
-        )
+            current_plays: List[dict, ...] = pp_plays[ppcheck_page:5]
+            ppcheck_embed: discord.Embed = await self.new_ppcheck_embed(
+                ctx, current_plays, osu_droid_user
+            )
 
         ppcheck_msg: discord.Message = await ctx.reply(ctx.author.mention, embed=ppcheck_embed)
 
