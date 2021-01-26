@@ -1,7 +1,8 @@
+from typing import Union
+
 import discord
 from discord.ext import commands
 
-from typing import Union
 from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile, new_osu_droid_profile
 from utils.osu_droid_utils import default_user_exists_check, submit_profile_to_db, default_search_for_uid_in_db_handling
 

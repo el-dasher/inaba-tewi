@@ -4,7 +4,6 @@ from typing import Union
 import discord
 from discord.ext import commands
 
-
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
 from utils.database import BINDED_DOCUMENT
 from utils.osu_droid_utils import default_total_dpp, default_user_exists_check

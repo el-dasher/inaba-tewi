@@ -46,7 +46,7 @@ class Compare(commands.Cog):
         found_plays: filter = filter(lambda a: a['beatmap_id'] == play_to_compare_to, user_plays)
 
         play_info = next(found_plays, None)
-        
+
         if not play_info:
             return await ctx.reply(
                 "❎ **| Eu não consegui achar a sua play nesse mapa na base de dados,"

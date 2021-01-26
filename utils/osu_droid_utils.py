@@ -7,12 +7,11 @@ import discord
 from discord.ext import commands
 from firebase_admin.firestore import firestore
 
-from utils.osuapi import OSU_PPY_API
-
 from helpers.osu.beatmaps.calculator import BumpedOsuPlay
 from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile, OsuDroidPlay
 from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
 from utils.database import BINDED_DOCUMENT, RECENT_CALC_DOCUMENT, USERS_DOCUMENT
+from utils.osuapi import OSU_PPY_API
 
 
 def default_total_dpp(osu_droid_user: OsuDroidProfile) -> Union[str, None]:
@@ -107,7 +106,7 @@ def get_default_beatmap_stats_string(
     if beatmap_data_from_api:
         approved_state: int = int(beatmap_data_from_api.approved)
         approved_strs: Tuple[str, ...] = ("In-Progress", "Ranked", "Approved", "Qualified", "Loved", "Graveyard")
-        
+
         approved_str: str = approved_strs[approved_state]
 
         extra_information = (

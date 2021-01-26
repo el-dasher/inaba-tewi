@@ -1,15 +1,17 @@
+import asyncio
+from typing import Union, List, Tuple
+
 import discord
 from discord.ext import commands
-from typing import Union, List, Tuple
+
+from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile
+from utils.bot_defaults import setup_generic_embed
 from utils.osu_droid_utils import (
     default_search_for_uid_in_db_handling,
     default_user_exists_check,
     default_total_dpp,
     OsuDroidProfile
 )
-from utils.bot_defaults import setup_generic_embed
-from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile
-import asyncio
 
 
 class PPCheck(commands.Cog):
@@ -65,7 +67,7 @@ class PPCheck(commands.Cog):
 
         current_plays: List[dict, ...] = pp_plays[ppcheck_page:5]
         ppcheck_embed: discord.Embed = await self.new_ppcheck_embed(
-                    ctx, current_plays, osu_droid_user
+            ctx, current_plays, osu_droid_user
         )
 
         ppcheck_msg: discord.Message = await ctx.reply(ctx.author.mention, embed=ppcheck_embed)
@@ -86,11 +88,10 @@ class PPCheck(commands.Cog):
                 await ppcheck_msg.clear_reactions()
                 return None
             else:
-
-                # Changes the page of the ppcheck based if it's the first reaction or other
-
                 decrease_increase_by: int = 5
-                if valid_reaction.emoji == arrows[0]:
+                page_limit: int = len(pp_plays) - 5
+
+                if valid_reaction.emoji == arrows[0] or ppcheck_page >= page_limit or ppcheck_page <= -page_limit:
                     ppcheck_page = 0
                 elif valid_reaction.emoji == arrows[1]:
                     ppcheck_page -= decrease_increase_by

@@ -71,8 +71,8 @@ CacheControl = "*"
 Deprecated = "*"
 Logbook = "*"
 PyJWT = "*"
-oppadc = {git = "https://github.com/The-CJ/oppadc.py.git"}
-aioosuapi = {git = "https://github.com/Kyuunex/aioosuapi"}
+oppadc = { git = "https://github.com/The-CJ/oppadc.py.git" }
+aioosuapi = { git = "https://github.com/Kyuunex/aioosuapi" }
 
 "discord.py" = "*"
 
