@@ -61,7 +61,7 @@ class Compare(commands.Cog):
 
         ppv2_play: BumpedOsuPlay = await new_bumped_osu_play(
             play_info['beatmap_id'], play_info['mods'], play_info['misses'],
-            play_info['accuracy'], play_info['max_combo'], 1.00, True, beatmap_data_from_api
+            play_info['accuracy'], play_info['max_combo'], 1.00, False, beatmap_data_from_api
         )
 
         play_stats: OsuStats = ppv2_play.getStats(Mods=play_info['mods'])
@@ -83,7 +83,7 @@ class Compare(commands.Cog):
             name=f"Dados da play do(a) {osu_droid_user['username']}",
             value=">>> "
                   "**"
-                  f"BR_DPP: {bumped_play.raw_pp:.2f} PPV2: {ppv2_play.raw_pp:.2f}\n"
+                  f"BR_DPP: {bumped_play.raw_pp:.2f} | PPV2: {ppv2_play.raw_pp:.2f}\n"
                   f"Accuracy: {play_info['accuracy']:.2f}%\n"
                   f"Score: {play_info['score']:,}\n"
                   f"Combo: {play_info['max_combo']} / {bumped_play.maxCombo()}\n"

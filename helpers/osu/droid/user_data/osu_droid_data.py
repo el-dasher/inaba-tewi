@@ -11,11 +11,14 @@ from bs4 import Tag, NavigableString
 from helpers.osu.droid.user_data.exceptions import MissingRequiredArgument
 
 _DPP_BOARD_API_KEY: str = getenv('DPP_BOARD_API_KEY')
+
+"""
 my_http_headers: dict = {
     "User-Agent":
         "Mozilla/5.0 (X11; CrOS x86_64 12871.102.0)"
         " AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.141 Safari/537.36"
 }
+"""
 
 
 class OsuDroidProfile:
@@ -56,12 +59,12 @@ class OsuDroidProfile:
     async def setup(self) -> dict:
         async with aiohttp.ClientSession() as session:
             if self.needs_player_html:
-                async with session.get(self.main_profile_url, headers=my_http_headers) as res:
+                async with session.get(self.main_profile_url) as res:
                     self._player_html = BeautifulSoup(await res.text(), features="html.parser")
                     self._stats = list(map(lambda a: a.text,
                                            self._player_html.find_all("span", class_="pull-right")[-5:]))
             if self.needs_pp_data:
-                async with session.get(self.pp_profile_url, headers=my_http_headers) as res:
+                async with session.get(self.pp_profile_url) as res:
                     self._bad_request: Dict[str, int, str, list] = {
                         "uid": 0,
                         "username": "None",
