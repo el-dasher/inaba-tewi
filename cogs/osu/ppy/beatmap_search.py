@@ -48,19 +48,28 @@ class BeatmapSearch(commands.Cog):
 
     @commands.command(name="beatmapsearch", aliases=("mapsearch",))
     async def mapsearch(self, ctx: commands.Context, *query):
+
         if not query:
             return await ctx.reply("❎ **| Você esqueceu da sua query para eu pesquisar...**")
 
-        query: str = " ".join(query)
+        query: str = "_".join(query)
         sayobot_url: str = f"https://api.sayobot.cn/beatmaplist?&T=4&L=100&M=1&K={query}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(sayobot_url) as res:
-                found_maps: List[dict, ...] = (await res.json(content_type=None))['data']
+        async with ctx.typing():
+            async with aiohttp.ClientSession() as session:
+                async with session.get(sayobot_url) as res:
+                    res_json = await res.json(content_type=None)
+                    if res_json['status'] == -1:
+                        return await ctx.reply(
+                            "❎ **| A sayobot retornou um erro, possivelmente porque"
+                            " o beatamp que você procura não existe....**"
+                        )
+                    found_maps: List[dict, ...] = res_json['data']
 
-        page_number: int = 0
 
-        maps_embed: discord.Embed = await self.new_maps_embed(ctx, found_maps, page_number)
+            page_number: int = 0
+
+            maps_embed: discord.Embed = await self.new_maps_embed(ctx, found_maps, page_number)
 
         maps_msg: discord.Message = await ctx.reply(ctx.author.mention, embed=maps_embed)
 
