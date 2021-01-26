@@ -53,7 +53,7 @@ class Compare(commands.Cog):
                 " talvez seja por que o mapa não está submitado no site do peppy?**")
 
         beatmap_data_from_api: aioosuapi.Beatmap = await OSU_PPY_API.get_beatmap(h=play_info['hash'])
-        
+
         bumped_play: BumpedOsuPlay = await new_bumped_osu_play(
             play_info['beatmap_id'], play_info['mods'], play_info['misses'],
             play_info['accuracy'], play_info['max_combo'],
