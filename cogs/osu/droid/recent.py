@@ -58,13 +58,14 @@ class Recent(commands.Cog):
                     adjust_to_droid=True, beatmap_data_from_osu_api=recent_beatmap
                 )
                 ppv2_play = bumped_play.original
-
             except AttributeError:
                 play_diff: Union[float, None] = None
             else:
                 bumped_play_max_combo_str = f"/ {bumped_play.maxCombo()}"
                 play_stats: OsuStats = ppv2_play.getStats(Mods=recent_play.mods)
                 play_diff = play_stats.total
+                ppv2_pp = ppv2_play.getPP(Mods=recent_play.mods)
+
 
             play_diff_str: str = ""
             if play_diff:
@@ -87,8 +88,7 @@ class Recent(commands.Cog):
 
             br_dpp_str: str = ""
             ppv2_str: str = ""
-            ppv2_pp = ppv2_play.getPP(Mods=recent_play.mods)
-
+            
             info_beatmap_str: str = "> ❎ **| Não encontrei o beatmap no site do ppy...**"
             if bumped_play and ppv2_play:
                 br_dpp_str = f"BR_DPP: {bumped_play.raw_pp:.2f}"
