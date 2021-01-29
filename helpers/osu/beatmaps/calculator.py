@@ -2,7 +2,6 @@ from typing import Union
 
 import aiohttp
 import aioosuapi
-from copy import deepcopy
 import oppadc
 
 
@@ -129,7 +128,7 @@ class BumpedOsuPlay(oppadc.OsuMap):
                 self._base_speed_pp = self.speed_pp
                 self._base_aim_pp = self.aim_pp
 
-                self.speed_pp *= 0.8
+                self.speed_pp *= 0.6
                 self.aim_pp *= 0.8
 
                 """

@@ -21,18 +21,18 @@ class MapCalc(commands.Cog):
 
     async def calculate_main(
             self, ctx: Union[discord.Message, commands.Context],
-            *params: Union[Tuple[Union[int, str]], List[Union[int, str]]],
+            *args: Union[Tuple[Union[int, str]], List[Union[int, str]]],
     ) -> None:
         async with ctx.typing():
-            params = params[0]
-            beatmap_id = params[0]
+            args = args[0]
+            beatmap_id = args[0]
 
             # This means that the user probably provided a beatmap url over a beatmap_id
-            if type(params[0]) == str:
-                beatmap_id = params[0].split("/")[-1]
+            if type(args[0]) == str:
+                beatmap_id = args[0].split("/")[-1]
 
             # Excludes the beatmap_id or url
-            params = params[1:]
+            args = args[1:]
 
             mods: str = "NM"
             misses: int = 0
@@ -48,7 +48,7 @@ class MapCalc(commands.Cog):
                 return None
 
             # Filtering the user input to get the correct paramters
-            for param in params:
+            for param in args:
                 if param.startswith("+"):
                     mods = param.replace("+", "")
                 else:
@@ -123,9 +123,9 @@ class MapCalc(commands.Cog):
 
     @commands.command(name="mapcalc", aliases=["calc", "prevcalc"])
     async def map_calc(
-            self, ctx: commands.Context, *params: Union[int, str]
+            self, ctx: commands.Context, *args: Union[int, str]
     ) -> None:
-        params = list(params)
+        args: List[Union[int, str], ...] = list(args)
 
         if ctx.invoked_with == "prevcalc":
             previous_beatmaps = RECENT_CALC_DOCUMENT.get().to_dict()
@@ -135,9 +135,9 @@ class MapCalc(commands.Cog):
             else:
                 return await ctx.reply(BEATMAP_NOT_BEING_TALKED)
 
-            params.insert(0, previous_beatmap_id)
+            args.insert(0, previous_beatmap_id)
 
-        calc_embed = await self.calculate_main(ctx, params)
+        calc_embed = await self.calculate_main(ctx, args)
 
         if calc_embed:
             await ctx.reply(ctx.author.mention, embed=calc_embed)
@@ -167,8 +167,8 @@ class MapCalc(commands.Cog):
 
                 base_url = "".join(base_url_list)
                 if base_url in beatmap_base_urls:
-                    params: list = message.content.split()
-                    calc_embed = await self.calculate_main(message, params)
+                    args: List[str, ...] = message.content.split()
+                    calc_embed = await self.calculate_main(message, args)
 
                     if calc_embed:
                         await message.reply(message.author.mention, embed=calc_embed)

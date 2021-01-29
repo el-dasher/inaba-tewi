@@ -10,10 +10,7 @@ class ErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, exc: Exception) -> Union[Exception, discord.Message]:
-        print("ERROR")
-
-        unexpected_error: bool = False
-        unexpected_exception: Exception = exc
+        unexpected_response: str = "❎ **| Ocorreu um erro inesperado...**"
 
         if isinstance(exc, commands.CommandNotFound):
             return await ctx.reply("❎ **| Eu não tenho esse comando atualmente, desculpa...**")
@@ -33,27 +30,22 @@ class ErrorHandler(commands.Cog):
             )
 
         elif hasattr(exc, "original"):
-            print(exc)
             args_0: str = exc.args[0]
-            if "ContentTypeError" or "ClientConnectorError" in args_0:
-                if "ContentTypeError" in args_0:
-                    return await ctx.reply(
-                        "❎ **| Não foi possivel adquirir uma resposta adequada do site"
-                        " ou API necessária para que este comando funcione!**"
-                    )
-                elif "ClientConnectorError" in args_0:
-                    return await ctx.reply(
-                        "❎ **| Não foi possível se conectar ao site ou API necessária para que esse comando funcione!**"
-                    )
+            if "ContentTypeError" in args_0:
+                return await ctx.reply(
+                    "❎ **| Não foi possivel adquirir uma resposta adequada do site"
+                    " ou API necessária para que este comando funcione!**"
+                )
+            elif "ClientConnectorError" in args_0:
+                return await ctx.reply(
+                    "❎ **| Não foi possível se conectar ao site ou API necessária para que esse comando funcione!**"
+                )
             else:
-                unexpected_error = True
-                unexpected_exception = exc.original
+                await ctx.reply(unexpected_response)
+                raise exc.original
         else:
-            unexpected_error = True
-
-        if unexpected_error:
-            await ctx.reply("❎ **| Infelizmente occoreu um erro inesperado ao rodar esse comando...**")
-            raise unexpected_exception
+            await ctx.reply(unexpected_response)
+            raise exc
 
 
 def setup(bot):

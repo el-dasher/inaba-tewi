@@ -56,7 +56,10 @@ class Recent(commands.Cog):
             else:
                 bumped_play_max_combo_str = f"/ {bumped_play.maxCombo()}"
                 play_stats: OsuStats = ppv2_play.getStats(Mods=recent_play.mods)
-                play_diff = play_stats.total
+                droid_play_stats: OsuStats = bumped_play.getStats(Mods=recent_play.mods)
+
+                droid_diff: float = droid_play_stats.total
+                play_diff: float = play_stats.total
 
                 # noinspection PyTypeChecker
                 ppv2_pp = ppv2_play.getPP(
@@ -64,9 +67,12 @@ class Recent(commands.Cog):
                     misses=recent_play.misses, combo=recent_play.max_combo, recalculate=True
                 )
 
-            play_diff_str: str = ""
-            if play_diff:
-                play_diff_str = f" - {play_diff:.2f}★"
+            diff_str: str = ""
+            if play_diff and droid_play_stats:
+                play_diff_str = f"{play_diff:.2f}★"
+                droid_diff_str = f"{droid_diff:.2f}★"
+
+                diff_str = f"- {droid_diff_str} -({play_diff_str})"
 
             recent_beatmap_thumbnail: str = ""
             recent_beatmap_url: str = ""
@@ -76,7 +82,7 @@ class Recent(commands.Cog):
 
             recent_embed.set_author(
                 url=recent_beatmap_url,
-                name=f"{recent_play.title} +{recent_play.mods}{play_diff_str}",
+                name=f"{recent_play.title} +{recent_play.mods} {diff_str}",
                 icon_url=osu_droid_user.avatar
             )
 

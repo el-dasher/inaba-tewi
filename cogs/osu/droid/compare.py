@@ -67,13 +67,16 @@ class Compare(commands.Cog):
                 combo=play_info['max_combo'], recalculate=True
             )
             play_stats: OsuStats = ppv2_map.getStats(Mods=play_info['mods'])
+            droid_stats: OsuStats = bumped_play.getStats(Mods=play_info['mods'])
+
             play_diff: float = play_stats.total
+            droid_diff: float = droid_stats.total
 
             compare_embed: discord.Embed = discord.Embed(timestamp=play_info['date'], color=ctx.author.color)
 
             compare_embed.set_author(
                 url=beatmap_data_from_api.url,
-                name=f"{play_info['title']} +{play_info['mods']} - {play_diff:.2f}★",
+                name=f"{play_info['title']} +{play_info['mods']} - {droid_diff:.2f}★ -({play_diff:.2f}★)",
                 icon_url=osu_droid_user['avatar']
             )
 
