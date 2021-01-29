@@ -57,8 +57,12 @@ class Recent(commands.Cog):
                 bumped_play_max_combo_str = f"/ {bumped_play.maxCombo()}"
                 play_stats: OsuStats = ppv2_play.getStats(Mods=recent_play.mods)
                 play_diff = play_stats.total
-                ppv2_pp = ppv2_play.getPP(Mods=recent_play.mods)
 
+                # noinspection PyTypeChecker
+                ppv2_pp = ppv2_play.getPP(
+                    Mods=recent_play.mods, accuracy=recent_play.accuracy,
+                    misses=recent_play.misses, combo=recent_play.max_combo, recalculate=True
+                )
 
             play_diff_str: str = ""
             if play_diff:

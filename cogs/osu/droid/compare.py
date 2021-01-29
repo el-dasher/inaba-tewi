@@ -62,7 +62,10 @@ class Compare(commands.Cog):
                 adjust_to_droid=True, beatmap_data_from_osu_api=beatmap_data_from_api
             )
             ppv2_map: oppadc.OsuMap = bumped_play.original
-            ppv2_calc_pp: oppadc.osumap.OsuPP = ppv2_map.getPP(Mods=play_info['mods'])
+            ppv2_calc_pp: oppadc.osumap.OsuPP = ppv2_map.getPP(
+                Mods=play_info['mods'], accuracy=play_info['accuracy'], misses=play_info['misses'],
+                combo=play_info['max_combo'], recalculate=True
+            )
             play_stats: OsuStats = ppv2_map.getStats(Mods=play_info['mods'])
             play_diff: float = play_stats.total
 

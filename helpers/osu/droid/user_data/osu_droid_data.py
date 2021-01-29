@@ -72,7 +72,6 @@ class OsuDroidProfile:
 
                         if 'data' in pp_board_res:
                             self._user_pp_data_json = pp_board_res['data']
-
                         if self._user_pp_data_json:
                             self.in_pp_database = True
                         else:
