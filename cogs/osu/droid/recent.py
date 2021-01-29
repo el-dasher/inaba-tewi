@@ -29,20 +29,13 @@ class Recent(commands.Cog):
         async with ctx.typing():
             droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
 
-            osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(
-                droid_user_id, needs_player_html=True, needs_pp_data=True
-            )
+            osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(droid_user_id, needs_player_html=True)
 
-            import time
-            if not droid_user_id:
-                return None
-            if not await default_user_exists_check(ctx, osu_droid_user):
+            if not droid_user_id or not await default_user_exists_check(ctx, osu_droid_user):
                 return None
 
             recent_play: OsuDroidPlay = osu_droid_user.recent_play
-
             recent_beatmap: Beatmap = (await OSU_PPY_API.get_beatmap(h=recent_play.hash))
-
             recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=recent_play.date)
 
             bumped_play: Union[BumpedOsuPlay, None] = None
