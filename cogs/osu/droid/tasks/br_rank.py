@@ -2,7 +2,6 @@ from datetime import datetime
 from json import JSONDecodeError
 
 import discord
-import numpy as np
 from aioosuapi import Beatmap
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
@@ -73,13 +72,8 @@ class BRRank(commands.Cog):
                 calculated: list = []
 
                 for calc_list in to_calculate:
-                    try:
-                        res = np.average(calc_list, weights=[x * 0.95 ** i for i, x in enumerate(calc_list)])
-                    except ZeroDivisionError:
-                        pass
-                    else:
-                        calculated.append(res)
-
+                    res: float = sum([x * 0.95 ** i for i, x in enumerate(calc_list)])
+                    calculated.append(res)
                 try:
                     user_data = {
                         'total_dpp': osu_droid_user.total_dpp,
