@@ -91,7 +91,7 @@ class Recent(commands.Cog):
 
             br_dpp_str: str = ""
             ppv2_str: str = ""
-            
+
             info_beatmap_str: str = "> ❎ **| Não encontrei o beatmap no site do ppy...**"
             if bumped_play and ppv2_play:
                 br_dpp_str = f"BR_DPP: {bumped_play.raw_pp:.2f}"

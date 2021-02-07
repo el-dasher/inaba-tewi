@@ -2,9 +2,8 @@ from typing import Tuple, Union, List
 
 import aioosuapi
 import discord
-from discord.ext import commands
 import oppadc
-
+from discord.ext import commands
 
 from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
 from utils.bot_defaults import setup_generic_embed

@@ -9,10 +9,10 @@ from typing import List, Tuple
 import aiohttp
 import discord
 from discord.ext import commands
+from requests.utils import quote
 
 from utils.bot_defaults import setup_generic_embed
 from utils.osu_ppy_and_droid_utils import get_approved_str
-from requests.utils import quote
 
 
 class BeatmapSearch(commands.Cog):
@@ -55,7 +55,7 @@ class BeatmapSearch(commands.Cog):
 
         query: str = " ".join(query)
         encoded_query = quote(query)
-        
+
         sayobot_url: str = f"https://api.sayobot.cn/beatmaplist?&T=4&L=100&M=1&K={encoded_query}"
 
         async with ctx.typing():
@@ -68,7 +68,6 @@ class BeatmapSearch(commands.Cog):
                             " o beatmap que você procura não existe....**"
                         )
                     found_maps: List[dict, ...] = res_json['data']
-
 
             page_number: int = 0
 

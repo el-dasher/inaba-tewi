@@ -1,16 +1,17 @@
+from datetime import datetime
+from json import JSONDecodeError
+
 import discord
-from typing import Dict, List
+import numpy as np
+from aioosuapi import Beatmap
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
+
+from helpers.osu.beatmaps.calculator import BumpedOsuPlay, new_bumped_osu_play
+from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
 from utils.bot_setup import DEBUG
 from utils.database import BR_UIDS_DOCUMENT, OSU_DROID_COLLECTION
-from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
-from helpers.osu.beatmaps.calculator import BumpedOsuPlay, new_bumped_osu_play
-from datetime import datetime
-from aioosuapi import Beatmap
 from utils.osuapi import OSU_PPY_API
-from json import JSONDecodeError
-import numpy as np
 
 
 class BRRank(commands.Cog):
@@ -52,7 +53,6 @@ class BRRank(commands.Cog):
 
             try:
                 for top_play in top_plays:
-
                     osu_api_beatmap: Beatmap = await OSU_PPY_API.get_beatmap(h=top_play['hash'])
                     beatmap_data: BumpedOsuPlay = await new_bumped_osu_play(
                         osu_api_beatmap.beatmap_id,
