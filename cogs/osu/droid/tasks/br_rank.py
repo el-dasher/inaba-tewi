@@ -23,7 +23,6 @@ class BRRank(commands.Cog):
 
     @tasks.loop(hours=1)
     async def br_rank(self):
-
         if DEBUG:
             return None
 
