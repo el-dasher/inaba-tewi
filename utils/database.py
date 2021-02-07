@@ -2,14 +2,17 @@ from firebase_admin.firestore import firestore
 
 from config.firebase.database import TEWI_DB
 
-# Collection of binded users for every binded discord_id
 # noinspection PyTypeChecker
-BINDED_DOCUMENT: firestore.DocumentReference = TEWI_DB.collection('OSU!DROID').document('BINDED_USERS')
+OSU_DROID_COLLECTION: firestore.CollectionReference = TEWI_DB.collection('OSU!DROID')
+
+# Collection of binded users for every binded discord_id
+BINDED_DOCUMENT: firestore.DocumentReference = OSU_DROID_COLLECTION.document('BINDED_USERS')
 
 # Collection of users with their respective data for every binded osu!droid uid
-# noinspection PyTypeChecker
-USERS_DOCUMENT: firestore.DocumentReference = TEWI_DB.collection('OSU!DROID').document('USERS_DATA')
+USERS_DOCUMENT: firestore.DocumentReference = OSU_DROID_COLLECTION.document('USERS_DATA')
 
 # The most recent beatmap calculated collection
-# noinspection PyTypeChecker
-RECENT_CALC_DOCUMENT: firestore.DocumentReference = TEWI_DB.collection('OSU!DROID').document("RECENT_CALC")
+RECENT_CALC_DOCUMENT: firestore.DocumentReference = OSU_DROID_COLLECTION.document("RECENT_CALC")
+
+# BR PLAYERS UIDS
+BR_UIDS_DOCUMENT: firestore.DocumentReference = OSU_DROID_COLLECTION.document("BR_UIDS")

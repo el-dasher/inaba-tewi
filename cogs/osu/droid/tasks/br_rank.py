@@ -1,0 +1,132 @@
+import discord
+from typing import Dict, List
+from discord.ext import commands, tasks
+from discord.ext.commands import Cog
+from utils.bot_setup import DEBUG
+from utils.database import BR_UIDS_DOCUMENT, OSU_DROID_COLLECTION
+from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
+from helpers.osu.beatmaps.calculator import BumpedOsuPlay, new_bumped_osu_play
+from datetime import datetime
+from aioosuapi import Beatmap
+from utils.osuapi import OSU_PPY_API
+from json import JSONDecodeError
+import numpy as np
+
+
+class BRRank(commands.Cog):
+    def __init__(self, bot: discord.ext.commands.Bot):
+        self.bot = bot
+
+    @Cog.listener()
+    async def on_ready(self):
+        self.br_rank.start()
+
+    @tasks.loop(hours=1)
+    async def br_rank(self):
+
+        if DEBUG:
+            return None
+
+        try:
+            br_rank_channel: discord.TextChannel = self.bot.get_channel(807887111788691477)
+            br_rank_message: discord.Message = await br_rank_channel.fetch_message(807909428828700712)
+        except AttributeError:
+            return print("Os canais do rank de dpp provavelmente foram deletados!")
+
+        fetched_data: list = []
+
+        uid_list: list = BR_UIDS_DOCUMENT.get().to_dict()['0']
+
+        for uid in uid_list:
+
+            bpp_aim_list, bpp_speed_list, diff_ar_list = [], [], []
+
+            osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(
+                uid, needs_player_html=True, needs_pp_data=True
+            )
+
+            if not osu_droid_user.exists or not osu_droid_user.in_pp_database:
+                continue
+
+            top_plays = osu_droid_user.pp_data['pp']['list']
+
+            try:
+                for top_play in top_plays:
+
+                    osu_api_beatmap: Beatmap = await OSU_PPY_API.get_beatmap(h=top_play['hash'])
+                    beatmap_data: BumpedOsuPlay = await new_bumped_osu_play(
+                        osu_api_beatmap.beatmap_id,
+                        mods=top_play['mods'], misses=top_play['miss'],
+                        accuracy=top_play['accuracy'], max_combo=top_play['combo'], custom_speed=1.00
+                    )
+
+                    bpp_aim_list.append(beatmap_data.aim_pp)
+                    bpp_speed_list.append(beatmap_data.speed_pp)
+                    diff_ar_list.append(beatmap_data.ar)
+
+                to_calculate = [
+                    diff_ar_list,
+                    bpp_speed_list,
+                    bpp_aim_list,
+                ]
+
+                calculated: list = []
+
+                for calc_list in to_calculate:
+                    try:
+                        res = np.average(calc_list, weights=[x * 0.95 ** i for i, x in enumerate(calc_list)])
+                    except ZeroDivisionError:
+                        pass
+                    else:
+                        calculated.append(res)
+
+                try:
+                    user_data: Dict[str, float, float, str, float, float, float, float, List[dict]] = {
+                        'total_dpp': osu_droid_user.total_dpp,
+                        'overall_acc': osu_droid_user.accuracy,
+                        'username': osu_droid_user.username,
+                        'rank_score': osu_droid_user.rank_score,
+                        "reading": calculated[0],
+                        "speed": calculated[1],
+                        "aim": calculated[2],
+                        "pp_data": top_plays
+                    }
+                except IndexError:
+                    continue
+                else:
+                    fetched_data.append(user_data)
+            except (KeyError, JSONDecodeError):
+                continue
+
+        fetched_data.sort(key=lambda u: u['total_dpp'], reverse=True)
+        top_players = fetched_data[:25]
+
+        OSU_DROID_COLLECTION.document("TOP_PLAYERS").set({'user': top_players})
+
+        updated_data = discord.Embed(title="RANK DPP BR", timestamp=datetime.utcnow(), color=self.bot.user.color)
+        updated_data.set_footer(text="Atualizado")
+
+        for i, user in enumerate(top_players):
+            updated_data.add_field(
+                name=f"{i + 1} - {user['username']}",
+                value=(
+                    f">>> ```"
+                    f"{user['total_dpp']:.2f}dpp"
+                    f" accuracy: {user['overall_acc']:.2f}% - rankscore: #{user['rank_score']}\n"
+                    f"[speed: {user['speed']:.2f} |"
+                    f" aim: {user['aim']:.2f} |"
+                    f" reading: AR{user['reading']:.2f}]"
+                    f"```"
+                ),
+                inline=False
+            )
+
+        # noinspection PyBroadException
+        if br_rank_message:
+            return await br_rank_message.edit(content="", embed=updated_data)
+        else:
+            return await br_rank_channel.send("Não foi possivel encontrar a mensagem do rank dpp")
+
+
+def setup(bot):
+    bot.add_cog(BRRank(bot))
