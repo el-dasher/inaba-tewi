@@ -81,11 +81,13 @@ class BRRank(commands.Cog):
                         calculated.append(res)
 
                 try:
-                    user_data: Dict[str, float, float, str, float, float, float, float, List[dict]] = {
+                    user_data = {
                         'total_dpp': osu_droid_user.total_dpp,
                         'overall_acc': osu_droid_user.accuracy,
                         'username': osu_droid_user.username,
                         'rank_score': osu_droid_user.rank_score,
+                        'avatar': osu_droid_user.avatar,
+                        'play_count': osu_droid_user.play_count,
                         "reading": calculated[0],
                         "speed": calculated[1],
                         "aim": calculated[2],
