@@ -72,8 +72,12 @@ class BRRank(commands.Cog):
                 calculated: list = []
 
                 for calc_list in to_calculate:
-                    res: float = sum([x * 0.95 ** i for i, x in enumerate(calc_list)])
-                    calculated.append(res)
+                    try:
+                        res: float = sum(calc_list) / len(calc_list)
+                    except ZeroDivisionError:
+                        continue
+                    else:
+                        calculated.append(res)
                 try:
                     user_data = {
                         'total_dpp': osu_droid_user.total_dpp,
