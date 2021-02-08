@@ -80,16 +80,17 @@ class BRRank(commands.Cog):
                         calculated.append(res)
                 try:
                     user_data = {
+                        'uid': osu_droid_user.uid,
                         'total_dpp': osu_droid_user.total_dpp,
                         'overall_acc': osu_droid_user.accuracy,
                         'username': osu_droid_user.username,
                         'rank_score': osu_droid_user.rank_score,
                         'avatar': osu_droid_user.avatar,
                         'play_count': osu_droid_user.play_count,
-                        "reading": calculated[0],
-                        "speed": calculated[1],
-                        "aim": calculated[2],
-                        "pp_data": top_plays
+                        'reading': calculated[0],
+                        'speed': calculated[1],
+                        'aim': calculated[2],
+                        'pp_data': top_plays
                     }
                 except IndexError:
                     continue
@@ -101,7 +102,7 @@ class BRRank(commands.Cog):
         fetched_data.sort(key=lambda u: u['total_dpp'], reverse=True)
         top_players = fetched_data[:25]
 
-        OSU_DROID_COLLECTION.document("TOP_PLAYERS").set({'user': top_players})
+        OSU_DROID_COLLECTION.document("TOP_PLAYERS").set({'user': fetched_data})
 
         updated_data = discord.Embed(title="RANK DPP BR", timestamp=datetime.utcnow(), color=self.bot.user.color)
         updated_data.set_footer(text="Atualizado")
