@@ -53,15 +53,19 @@ class BRRank(commands.Cog):
             try:
                 for top_play in top_plays:
                     osu_api_beatmap: Beatmap = await OSU_PPY_API.get_beatmap(h=top_play['hash'])
-                    beatmap_data: BumpedOsuPlay = await new_bumped_osu_play(
-                        osu_api_beatmap.beatmap_id,
-                        mods=top_play['mods'], misses=top_play['miss'],
-                        accuracy=top_play['accuracy'], max_combo=top_play['combo'], custom_speed=1.00
-                    )
 
-                    bpp_aim_list.append(beatmap_data.aim_pp)
-                    bpp_speed_list.append(beatmap_data.speed_pp)
-                    diff_ar_list.append(beatmap_data.ar)
+                    if not osu_api_beatmap:
+                        continue
+                    else:
+                        beatmap_data: BumpedOsuPlay = await new_bumped_osu_play(
+                            osu_api_beatmap.beatmap_id,
+                            mods=top_play['mods'], misses=top_play['miss'],
+                            accuracy=top_play['accuracy'], max_combo=top_play['combo'], custom_speed=1.00
+                        )
+
+                        bpp_aim_list.append(beatmap_data.aim_pp)
+                        bpp_speed_list.append(beatmap_data.speed_pp)
+                        diff_ar_list.append(beatmap_data.ar)
 
                 to_calculate = [
                     diff_ar_list,
