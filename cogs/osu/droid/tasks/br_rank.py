@@ -82,7 +82,7 @@ class BRRank(commands.Cog):
                     user_data = {
                         'uid': osu_droid_user.uid,
                         'total_dpp': osu_droid_user.total_dpp,
-                        'rank_score': osu_droid_user.total_score,
+                        'total_score': osu_droid_user.total_score,
                         'overall_acc': osu_droid_user.accuracy,
                         'username': osu_droid_user.username,
                         'rank_score': osu_droid_user.rank_score,
