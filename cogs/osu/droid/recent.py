@@ -90,30 +90,29 @@ class Recent(commands.Cog):
             recent_embed.set_footer(text="\u200b", icon_url=recent_play.rank_url)
 
             info_beatmap_str: str = "> ❎ **| Não encontrei o beatmap no site do ppy...**"
-            pp_info_str: str = ""
+            pp_info_str: str = "UNKNOWN"
             if bumped_play and ppv2_play:
                 br_dpp_str = f"BR_DPP: {bumped_play.raw_pp:.2f}"
                 ppv2_str = f"PPV2: {ppv2_pp.total_pp:.2f}"
 
                 info_beatmap_str = get_default_beatmap_stats_string(bumped_play)
-                pp_info_str = f"{br_dpp_str} | {ppv2_str} \n"
+                pp_info_str = f"{br_dpp_str} | {ppv2_str}"
 
             recent_embed.add_field(
                 name=f"Dados da play do(a) {osu_droid_user.username}",
                 value=">>> "
                       "**"
-                      f"{pp_info_str}                                                "
+                      f"{pp_info_str}                                              \n" 
                       f"Accuracy: {recent_play.accuracy:.2f}%                      \n"
                       f"Score: {recent_play.score:,}                               \n"
                       f"Combo: {recent_play.max_combo} {bumped_play_max_combo_str} \n"
-                      f"Misses: {recent_play.misses}                               \n"
+                      f"Misses: {recent_play.misses}                                 "
                       "**".strip()
             )
 
             recent_embed.add_field(name=f"Infos do beatmap", value=info_beatmap_str, inline=False)
 
         await ctx.reply(content=ctx.author.mention, embed=recent_embed)
-
         await TEWI_DB.set_recent_play(ctx, bumped_play)
 
 

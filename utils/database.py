@@ -68,9 +68,8 @@ class TewiDB:
     async def set_recent_play(self, ctx: commands.Context, recent_beatmap: Beatmap):
         if recent_beatmap:
             self.RECENT_CALC_DOCUMENT.set({str(ctx.channel.id): recent_beatmap.beatmap_id}, merge=True)
-            await self.clear_previous_calc_from_db(ctx, 240)
 
-    async def get_recent_plays(self):
+    def get_recent_plays(self):
         return self.RECENT_CALC_DOCUMENT.get().to_dict()
 
     def get_droid_uid_in_db(self, discord_user: discord.Member) -> UidInDBResponse:

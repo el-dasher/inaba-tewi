@@ -36,7 +36,7 @@ class Submit(commands.Cog):
             await ctx.reply(bot_submit_res)
 
     @commands.has_permissions(administrator=True)
-    @commands.command(name='forcesubmit', aliases=('submithim', 'submither', 'submitzir'))
+    @commands.command(name='forcesubmit')
     async def force_submit(self, ctx: commands.Context, member: Union[discord.Member, int] = None):
         if not member:
             return await ctx.reply('❎ **| Ei adm, você esqueceu do usúario que você quer submitar!**')

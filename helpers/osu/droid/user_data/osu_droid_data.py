@@ -238,7 +238,7 @@ class OsuDroidProfile:
 
 
 class OsuDroidPlay:
-    def __init__(self, play_html: Union[Tag, NavigableString]):
+    def __init__(self, play_html: Union[Tag, NavigableString] = None):
         self._title: str = play_html.find("strong", class_="block").text
         self._rank_url: str = self._handle_rank(play_html.find("img")['src'])
         self._stats: tuple = tuple(map(lambda a: a.strip(), play_html.find("small").text.split("/")))
@@ -305,12 +305,83 @@ def _replace_mods(modstring: str) -> str:
         "Hidden", "HD").replace("HardRock", "HR").replace(
         "Precise", "PR").replace("NoFail", "NF").replace(
         "Easy", "EZ").replace("NightCore", "NC").replace(
-        "Precise", "PR").replace("None", "NM").replace(",", "").strip().replace(" ", "")
+        "Precise", "PR").replace("HalfTime", "HT").replace(
+        "None", "NM").replace(",", "").strip().replace(" ", "")
 
     if modstring == "" or modstring is None:
         modstring = "NM"
 
     return modstring
+
+
+class OsuDroidProfileFromParams(OsuDroidProfile):
+    def __init__(
+        self, uid: int = None, username: str = None, avatar: str = None, total_score: int = None,  accuracy: float = None,
+        play_count: int = None, rank_score: str = None, country: str = None, pp_data=None, total_dpp: int = None
+    ):
+        super().__init__(uid)
+
+        self.uid = uid
+        self._username = username
+        self._avatar = avatar
+        self._total_score = total_score
+        self._accuracy = accuracy
+        self._play_count = play_count
+        self._rank_score = rank_score
+        self._country = country
+        self._pp_data = pp_data
+        self._total_dpp = total_dpp
+
+    @property
+    def username(self):
+        return self._username
+
+    @property
+    def total_score(self) -> int:
+        return self._total_score
+
+    @property
+    def accuracy(self) -> float:
+        return self._accuracy
+
+    @property
+    def play_count(self) -> int:
+        return self._play_count
+
+    @property
+    def username(self) -> str:
+        return self._username
+
+    @property
+    def rank_score(self) -> str:
+        return self._rank_score
+
+    @property
+    def avatar(self) -> str:
+        return self._avatar
+
+    @property
+    def country(self) -> str:
+        return self._country
+
+    @property
+    def pp_data(self) -> dict:
+        return self._pp_data
+
+    @property
+    def total_dpp(self) -> Union[int, None]:
+        return self._total_dpp
+
+    @property
+    def best_play(self) -> dict:
+        self._pp_data_required()
+
+        best_play: dict = self._user_pp_data_json['pp']['list'][0]
+        return best_play
+
+    @property
+    def recent_plays(self) -> tuple:
+        return self._recent_plays
 
 
 async def new_osu_droid_profile(

@@ -37,12 +37,18 @@ class OsuDroidMap(oppadc.OsuMap):
         self.misses: int = misses
         self.accuracy: float = accuracy
         self.max_combo: int = achieved_combo
+        self.total_objects: int = 0
 
         self.raw_pp: Union[float, None] = None
         self.aim_pp: Union[float, None] = None
         self.speed_pp: Union[float, None] = None
         self.acc_pp: Union[float, None] = None
 
+        self.pp_object: Union[oppadc.osumap.OsuDifficulty, None] = None
+        self.diff_object: Union[oppadc.osumap.OsuPP, None] = None
+        self.stats_object: Union[oppadc.osumap.OsuStats, None] = None
+
+        self.predicted_values = None
         self.speed_multiplier: float = speed_multiplier
 
         self.base_cs: Union[float, None] = None
@@ -50,6 +56,7 @@ class OsuDroidMap(oppadc.OsuMap):
         self.base_ar: Union[float, None] = None
         self.base_hp: Union[float, None] = None
 
+        self.combo: int = achieved_combo
         self.bpm: Union[float, None] = None
         self.total_length: Union[float, None] = None
         self.beatmap_osu: Union[str, None] = None
@@ -82,12 +89,12 @@ class OsuDroidMap(oppadc.OsuMap):
         self._dispose_beatmap_data_from_osu_api_diff_data()
 
     def _calculate_diff(self):
-        calculated_diff = self.getDifficulty(Mods=self.mods)
+        self.diff_object = self.getDifficulty(Mods=self.mods)
 
-        self.base_cs = calculated_diff.cs
-        self.base_od = calculated_diff.od
-        self.base_ar = calculated_diff.ar
-        self.base_hp = calculated_diff.hp
+        self.base_cs = self.diff_object.cs
+        self.base_od = self.diff_object.od
+        self.base_ar = self.diff_object.ar
+        self.base_hp = self.diff_object.hp
 
     def _calculate_droid_stats(self):
         self.od = 5 - (75 + 5 * (5 - self.base_od) - 50) / 6
@@ -114,14 +121,44 @@ class OsuDroidMap(oppadc.OsuMap):
 
     def _calculate_br_dpp(self):
         # noinspection PyTypeChecker
-        calculated_pp = self.getPP(
+        self.pp_object = self.getPP(
             Mods=self.mods, accuracy=self.accuracy, misses=self.misses, combo=self.max_combo, recalculate=True
         )
 
-        self.aim_pp = calculated_pp.aim_pp
-        self.speed_pp = (calculated_pp.speed_pp * self.speed_multiplier)
-        self.acc_pp = calculated_pp.acc_pp
-        self.raw_pp = calculated_pp.total_pp
+        self.stats_object = self.getStats(self.mods, recalculate=True)
+        self.total_objects = self.amount_circle + self.amount_slider + self.amount_spinner
+
+        self.aim_pp = self.pp_object.aim_pp
+        self.speed_pp = self.pp_object.speed_pp * self.speed_multiplier
+        self.acc_pp = self.pp_object.acc_pp
+        self.raw_pp = self.pp_object.total_pp
+
+        final_multiplier = 1.44
+
+        if "NM" in self.mods:
+            final_multiplier *= max(0.9, 1.0 - 0.2 * self.misses)
+
+        # Extreme penalty
+        # =======================================================
+        # added to penalize map with little aim but ridiculously
+        # high speed value (which is easily abusable by using more than 2 fingers).
+        extreme_penalty = pow(
+            1 - abs(self.speed_pp - pow(self.aim_pp, 1.15)) /
+            max(self.speed_pp, pow(self.aim_pp, 1.15)),
+            0.2
+        )
+
+        final_multiplier *= max(
+            pow(extreme_penalty, 2),
+            -2 * pow(1 - extreme_penalty, 2) + 1
+        )
+
+        self.raw_pp = (
+                pow(
+                    pow(self.aim_pp, 1.1) + pow(self.speed_pp, 1.1) + pow(self.acc_pp, 1.1),
+                    1.0 / 1.1
+                ) * final_multiplier
+        )
 
     def _dispose_beatmap_data_from_osu_api_diff_data(self):
         if self._beatmap_data_from_osu_api:

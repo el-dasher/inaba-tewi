@@ -11,6 +11,10 @@ BOT_TOKEN: str = getenv('BOT_TOKEN')
 logging.basicConfig(level=logging.INFO)
 
 
+def check_for_custom_prefix(ctx):
+    pass
+
+
 class InabaTewi(Bot):
     def __init__(self):
         super().__init__(command_prefix=bot_setup.DEFAULT_BOT_PREFIXES, intents=discord.Intents.all())
@@ -33,8 +37,14 @@ class InabaTewi(Bot):
         print(f"{self.user} is ready to pat @everyone")
 
     async def on_message(self, message: discord.Message):
-        if message.author != self.user or not isinstance(message.channel, discord.DMChannel):
-            await self.process_commands(message)
+        if (
+                (
+                        message.author != self.user or not isinstance(message.channel, discord.DMChannel)
+                )
+        ):
+            for prefix in bot_setup.DEFAULT_BOT_PREFIXES:
+                if message.content.startswith(prefix):
+                    return await self.process_commands(message)
 
 
 inaba_tewi: InabaTewi = InabaTewi()
