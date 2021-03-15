@@ -6,14 +6,14 @@ import oppadc
 from discord.ext import commands
 from oppadc.osustats import OsuStats
 
-from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
+from helpers.osu.beatmaps.droid_oppadc import new_osu_droid_map, OsuDroidMap
 from utils.const_responses import BEATMAP_NOT_BEING_TALKED
-from utils.database import RECENT_CALC_DOCUMENT, USERS_DOCUMENT
+from utils.database import TEWI_DB
 from utils.osu_ppy_and_droid_utils import (
     default_search_for_uid_in_db_handling,
     get_default_beatmap_stats_string,
-    clear_previous_calc_from_db_in_one_minute
 )
+
 from utils.osuapi import OSU_PPY_API
 
 
@@ -21,23 +21,23 @@ class Compare(commands.Cog):
     def __init__(self, bot: discord.ext.commands.Bot):
         self.bot = bot
 
-    @commands.command(name="compare", aliases=["c", "comparison"])
+    @commands.command(name="compare", aliases=["c", ""])
     async def compare(self, ctx: commands.Context) -> Union[discord.Message, None]:
         async with ctx.typing():
-            current_recent_play: dict = RECENT_CALC_DOCUMENT.get().to_dict()
-            current_users: dict = USERS_DOCUMENT.get().to_dict()
+            current_recent_plays: dict = TEWI_DB.get_recent_plays()
+            current_users: dict = TEWI_DB.get_users_document()
 
-            if f"{ctx.channel.id}" in current_recent_play:
-                play_to_compare_to = current_recent_play[f"{ctx.channel.id}"]
-            else:
+            try:
+                play_to_compare_to = current_recent_plays[str(ctx.channel.id)]
+            except KeyError:
                 return await ctx.reply(BEATMAP_NOT_BEING_TALKED)
 
-            droid_user_id: Union[int, str, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=ctx.author)
+            droid_user_id: Union[str,  None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=ctx.author)
 
             if not droid_user_id:
                 return None
 
-            droid_user_id = f"{droid_user_id}"
+            droid_user_id = str(droid_user_id)
             if droid_user_id in current_users:
                 osu_droid_user: dict = current_users[f"{droid_user_id}"]
             else:
@@ -56,10 +56,10 @@ class Compare(commands.Cog):
 
             beatmap_data_from_api: aioosuapi.Beatmap = await OSU_PPY_API.get_beatmap(h=play_info['hash'])
 
-            bumped_play: BumpedOsuPlay = await new_bumped_osu_play(
+            bumped_play: OsuDroidMap = await new_osu_droid_map(
                 play_info['beatmap_id'], play_info['mods'], play_info['misses'],
                 play_info['accuracy'], play_info['max_combo'],
-                adjust_to_droid=True, beatmap_data_from_osu_api=beatmap_data_from_api
+                beatmap_data_from_osu_api=beatmap_data_from_api
             )
             ppv2_map: oppadc.OsuMap = bumped_play.original
             ppv2_calc_pp: oppadc.osumap.OsuPP = ppv2_map.getPP(
@@ -100,8 +100,7 @@ class Compare(commands.Cog):
             )
 
         await ctx.reply(content=ctx.author.mention, embed=compare_embed)
-        await clear_previous_calc_from_db_in_one_minute(ctx)
-
+        await TEWI_DB.clear_previous_calc_from_db(ctx, 240)
 
 def setup(bot):
     bot.add_cog(Compare(bot))

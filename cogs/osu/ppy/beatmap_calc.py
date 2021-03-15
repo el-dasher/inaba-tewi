@@ -5,13 +5,21 @@ import discord
 import oppadc
 from discord.ext import commands
 
-from helpers.osu.beatmaps.calculator import new_bumped_osu_play, BumpedOsuPlay
-from utils.bot_defaults import setup_generic_embed
+from helpers.osu.beatmaps.droid_oppadc import OsuDroidMap, new_osu_droid_map
+from utils.bot_defaults import GenericEmbed
 from utils.bot_setup import DEBUG
 from utils.const_responses import BEATMAP_NOT_BEING_TALKED
-from utils.database import RECENT_CALC_DOCUMENT
-from utils.osu_ppy_and_droid_utils import get_default_beatmap_stats_string, clear_previous_calc_from_db_in_one_minute
+from utils.database import TEWI_DB
+from utils.osu_ppy_and_droid_utils import get_default_beatmap_stats_string
 from utils.osuapi import OSU_PPY_API
+
+
+def is_droid_calc(message: discord.Message):
+    it_is: bool = False
+    if '-droid' in message.content:
+        it_is = True
+
+    return it_is
 
 
 class MapCalc(commands.Cog):
@@ -19,9 +27,12 @@ class MapCalc(commands.Cog):
         self.bot = bot
 
     async def calculate_main(
-            self, ctx: Union[discord.Message, commands.Context],
+            self, ctx: Union[discord.Message, commands.Context], is_droid=False,
             *args: Union[Tuple[Union[int, str]], List[Union[int, str]]],
-    ) -> None:
+    ) -> Union[GenericEmbed, None]:
+        if not is_droid:
+            return await ctx.reply("❎ **| Por enquanto o calculo de beatmaps só funciona em beatmaps do osu!droid!**")
+
         async with ctx.typing():
             args = args[0]
             beatmap_id = args[0]
@@ -38,7 +49,6 @@ class MapCalc(commands.Cog):
             accuracy: float = 100.00
             combo: Union[int, None] = None
             speed_multiplier: float = 1.00
-            adjust_to_droid = True
             beatmap_data_from_osu_api: aioosuapi.Beatmap = await OSU_PPY_API.get_beatmap(b=beatmap_id)
 
             if not beatmap_data_from_osu_api:
@@ -46,7 +56,7 @@ class MapCalc(commands.Cog):
 
                 return None
 
-            # Filtering the user input to get the correct paramters
+            # Filtering the user input to get the correct parameters
             for param in args:
                 if param.startswith("+"):
                     mods = param.replace("+", "")
@@ -64,23 +74,24 @@ class MapCalc(commands.Cog):
                             continue
                         else:
                             if param.endswith("%"):
+
                                 accuracy = floating_param
                             elif param.endswith("s"):
                                 speed_multiplier = floating_param
             try:
-                calc_beatmap: BumpedOsuPlay = await new_bumped_osu_play(
-                    beatmap_id, mods, misses, accuracy, combo, speed_multiplier,
-                    adjust_to_droid, beatmap_data_from_osu_api
-                )
-                max_values_with_calc_acc: BumpedOsuPlay = await new_bumped_osu_play(
-                    beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
-                    speed_multiplier, adjust_to_droid, beatmap_data_from_osu_api, raw_str=calc_beatmap.raw_str
-                )
-                ppv2_calc: oppadc.osumap.OsuPP = calc_beatmap.original.getPP(Mods=mods)
+                if is_droid:
+                    calc_beatmap: OsuDroidMap = await new_osu_droid_map(
+                        beatmap_id, mods, misses, accuracy, combo, speed_multiplier,
+                        beatmap_data_from_osu_api
+                    )
+                    max_values_with_calc_acc: OsuDroidMap = await new_osu_droid_map(
+                        beatmap_id, mods, 0, accuracy, calc_beatmap.maxCombo(),
+                        speed_multiplier, beatmap_data_from_osu_api, raw_str=calc_beatmap.raw_str
+                    )
             except AttributeError:
                 return await ctx.reply("❎ **| Ocorreu um erro ao calcular o beatmap")
 
-            calc_embed = setup_generic_embed(self.bot, ctx.author)
+            calc_embed = GenericEmbed(self.bot, ctx.author)
 
             calc_embed.set_author(
                 name=f"{calc_beatmap.title} [{beatmap_data_from_osu_api.version}]"
@@ -92,17 +103,16 @@ class MapCalc(commands.Cog):
 
             raw_pp_str: str = (
                 f"PP RAW: {calc_beatmap.raw_pp:.2f} -({max_values_with_calc_acc.raw_pp:.2f}) |"
-                f" {ppv2_calc.total_pp:.2f}\n"
             )
 
-            speed_pp_str: str = f"Speed PP: {calc_beatmap.speed_pp:.2f} | {ppv2_calc.speed_pp:.2f}\n"
-            aim_pp_str: str = f"Aim PP: {calc_beatmap.aim_pp:.2f} | {ppv2_calc.aim_pp:.2f}\n"
-            acc_pp_str: str = f"Acc PP: {calc_beatmap.acc_pp:.2f} | {ppv2_calc.acc_pp:.2f}\n"
+            speed_pp_str: str = f"Speed PP: {calc_beatmap.speed_pp:.2f}\n"
+            aim_pp_str: str = f"Aim PP: {calc_beatmap.aim_pp:.2f}      \n"
+            acc_pp_str: str = f"Acc PP: {calc_beatmap.acc_pp:.2f}      \n"
 
             calc_embed.add_field(
                 name="---Performance",
                 value=">>> **"
-                      "__BR_DPP -(max_br_dpp) | PPV2__\n"
+                      "__BR_DPP -(max_br_dpp) \n"
                       f"{raw_pp_str}"
                       f"{aim_pp_str}"
                       f"{speed_pp_str}"
@@ -116,18 +126,18 @@ class MapCalc(commands.Cog):
                 inline=False
             )
 
-            RECENT_CALC_DOCUMENT.set({f"{ctx.channel.id}": beatmap_id}, merge=True)
+            TEWI_DB.set_recent_play(ctx, calc_beatmap)
 
         return calc_embed
 
-    @commands.command(name="mapcalc", aliases=["calc", "prevcalc"])
+    @commands.command(name="manualcalc", aliases=["prevcalc"])
     async def map_calc(
             self, ctx: commands.Context, *args: Union[int, str]
     ) -> None:
         args: List[Union[int, str], ...] = list(args)
 
         if ctx.invoked_with == "prevcalc":
-            previous_beatmaps = RECENT_CALC_DOCUMENT.get().to_dict()
+            previous_beatmaps = TEWI_DB.get_recent_plays()
 
             if f"{ctx.channel.id}" in previous_beatmaps:
                 previous_beatmap_id = previous_beatmaps[f"{ctx.channel.id}"]
@@ -136,11 +146,14 @@ class MapCalc(commands.Cog):
 
             args.insert(0, previous_beatmap_id)
 
-        calc_embed = await self.calculate_main(ctx, args)
+        if is_droid_calc(ctx.message):
+            calc_embed = await self.calculate_main(ctx, True, args)
+        else:
+            calc_embed = await self.calculate_main(ctx, False, args)
 
         if calc_embed:
             await ctx.reply(ctx.author.mention, embed=calc_embed)
-            await clear_previous_calc_from_db_in_one_minute(ctx)
+            await TEWI_DB.clear_previous_calc_from_db_in_one_minute(ctx, 240)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -167,11 +180,14 @@ class MapCalc(commands.Cog):
                 base_url = "".join(base_url_list)
                 if base_url in beatmap_base_urls:
                     args: List[str, ...] = message.content.split()
-                    calc_embed = await self.calculate_main(message, args)
+
+                    if is_droid_calc(message):
+                        calc_embed = await self.calculate_main(message, True, args)
+                    else:
+                        calc_embed = await self.calculate_main(message, False, args)
 
                     if calc_embed:
                         await message.reply(message.author.mention, embed=calc_embed)
-                        await clear_previous_calc_from_db_in_one_minute(message)
 
 
 def setup(bot):

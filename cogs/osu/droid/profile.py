@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile
-from utils.bot_defaults import setup_generic_embed
+from utils.bot_defaults import GenericEmbed
 from utils.osu_ppy_and_droid_utils import (
     default_total_dpp,
     default_search_for_uid_in_db_handling,
@@ -16,7 +16,7 @@ class Profile(commands.Cog):
     def __init__(self, bot: discord.ext.commands.Bot):
         self.bot = bot
 
-    @commands.command(name="profile", aliases=["pfme", "pfid", "pf"])
+    @commands.command(name="pfme")
     async def profile(
             self, ctx: commands.Context, uid: Union[discord.Member, int] = None
     ) -> Union[discord.Message, None]:
@@ -35,11 +35,13 @@ class Profile(commands.Cog):
             else:
                 return None
 
-            profile_embed: discord.Embed = setup_generic_embed(self.bot, ctx.author)
+            profile_embed: discord.Embed = GenericEmbed(self.bot, ctx.author)
 
             profile_embed.set_thumbnail(url=osu_droid_user.avatar)
-            profile_embed.set_author(url=osu_droid_user.main_profile_url,
-                                     name=f"Perfil do(a) {osu_droid_user.username}")
+            profile_embed.set_author(
+                url=osu_droid_user.main_profile_url,
+                name=f"Perfil do(a) {osu_droid_user.username}"
+            )
 
             droid_user_country: str = osu_droid_user.country.lower()
 

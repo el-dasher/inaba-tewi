@@ -6,10 +6,10 @@ from aioosuapi import Beatmap
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 
-from helpers.osu.beatmaps.calculator import BumpedOsuPlay, new_bumped_osu_play
+from helpers.osu.beatmaps.droid_oppadc import OsuDroidMap, new_osu_droid_map
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
 from utils.bot_setup import DEBUG
-from utils.database import BR_UIDS_DOCUMENT, OSU_DROID_COLLECTION
+from utils.database import TEWI_DB
 from utils.osuapi import OSU_PPY_API
 
 
@@ -35,7 +35,7 @@ class BRRank(commands.Cog):
 
         fetched_data: list = []
 
-        uid_list: list = BR_UIDS_DOCUMENT.get().to_dict()['0']
+        uid_list: list = TEWI_DB.get_br_uids()
 
         for uid in uid_list:
 
@@ -57,7 +57,7 @@ class BRRank(commands.Cog):
                     if not osu_api_beatmap:
                         continue
                     else:
-                        beatmap_data: BumpedOsuPlay = await new_bumped_osu_play(
+                        beatmap_data: OsuDroidMap = await new_osu_droid_map(
                             osu_api_beatmap.beatmap_id,
                             mods=top_play['mods'], misses=top_play['miss'],
                             accuracy=top_play['accuracy'], max_combo=top_play['combo'], custom_speed=1.00
@@ -107,7 +107,7 @@ class BRRank(commands.Cog):
         fetched_data.sort(key=lambda u: u['total_dpp'], reverse=True)
         top_players = fetched_data[:25]
 
-        OSU_DROID_COLLECTION.document("TOP_PLAYERS").set({'user': fetched_data})
+        TEWI_DB.set_new_br_droid_top_players(fetched_data)
 
         updated_data = discord.Embed(title="RANK DPP BR", timestamp=datetime.utcnow(), color=self.bot.user.color)
         updated_data.set_footer(text="Atualizado")

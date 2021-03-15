@@ -11,7 +11,7 @@ import discord
 from discord.ext import commands
 from requests.utils import quote
 
-from utils.bot_defaults import setup_generic_embed
+from utils.bot_defaults import GenericEmbed
 from utils.osu_ppy_and_droid_utils import get_approved_str
 
 
@@ -23,7 +23,7 @@ class BeatmapSearch(commands.Cog):
     async def new_maps_embed(
             self, ctx: commands.Context, found_maps: List[dict], page_number: int = 0, show_downloads: bool = False
     ) -> discord.Embed:
-        maps_embed: discord.Embed = setup_generic_embed(self.bot, ctx.author)
+        maps_embed: discord.Embed = GenericEmbed(self.bot, ctx.author)
 
         if page_number < 0:
             page_number = len(found_maps) - abs(page_number)

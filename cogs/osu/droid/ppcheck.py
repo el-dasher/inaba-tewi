@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
-from utils.bot_defaults import setup_generic_embed
+from utils.bot_defaults import GenericEmbed
 from utils.osu_ppy_and_droid_utils import (
     default_search_for_uid_in_db_handling,
     default_user_exists_check,
@@ -20,7 +20,7 @@ class PPCheck(commands.Cog):
     async def new_ppcheck_embed(
             self, ctx: commands.Context, plays: List[dict], osu_droid_user: OsuDroidProfile, page_number: int = 0
     ) -> discord.Embed:
-        ppcheck_embed: discord.Embed = setup_generic_embed(self.bot, ctx.author)
+        ppcheck_embed: discord.Embed = GenericEmbed(self.bot, ctx.author)
         ppcheck_embed.set_author(
             name=f"Top plays do(a) {osu_droid_user.fast_username}", url=osu_droid_user.pp_profile_url
         )
@@ -85,20 +85,17 @@ class PPCheck(commands.Cog):
                     ), timeout=60
                 ))[0]
             except asyncio.TimeoutError:
-                await ppcheck_msg.clear_reactions()
-                return None
+                return await ppcheck_msg.clear_reactions()
             else:
                 decrease_increase_by: int = 5
                 page_limit: int = len(pp_plays) - 5
 
                 if valid_reaction.emoji == arrows[0] or ppcheck_page >= page_limit or ppcheck_page <= -page_limit:
                     ppcheck_page = 0
-                elif valid_reaction.emoji == arrows[1]:
+                elif valid_reaction.emoji == arrows[1] or valid_reaction.emoji == arrows[3]:
                     ppcheck_page -= decrease_increase_by
-                elif valid_reaction.emoji == arrows[2]:
-                    ppcheck_page += decrease_increase_by
                 else:
-                    ppcheck_page = -decrease_increase_by
+                    ppcheck_page += decrease_increase_by
 
                 current_plays: List[dict, ...] = pp_plays[ppcheck_page:][:decrease_increase_by]
 
@@ -106,7 +103,7 @@ class PPCheck(commands.Cog):
                     ctx, current_plays, osu_droid_user, ppcheck_page
                 )
 
-                await ppcheck_msg.edit(embed=ppcheck_embed)
+                return await ppcheck_msg.edit(embed=ppcheck_embed)
 
 
 def setup(bot):

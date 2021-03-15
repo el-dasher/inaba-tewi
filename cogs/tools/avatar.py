@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from utils.bot_defaults import setup_generic_embed
+from utils.bot_defaults import GenericEmbed
 
 
 class Avatar(commands.Cog):
@@ -13,10 +13,9 @@ class Avatar(commands.Cog):
         bot_avatar_res: str = "O avatar dele é muito legal"
         if member is None:
             bot_avatar_res = "O seu avatar é top"
-
             member = ctx.author
 
-        avatar_embed: discord.Embed = setup_generic_embed(self.bot, member)
+        avatar_embed: discord.Embed = GenericEmbed(self.bot, member)
         avatar_embed.set_image(url=member.avatar_url)
         avatar_embed.set_author(name=bot_avatar_res, url=member.avatar_url)
 

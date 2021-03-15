@@ -50,7 +50,7 @@ class Submit(commands.Cog):
 
         await self.submit_profile_main(ctx, droid_user_id, True)
 
-    @commands.command(name="submitprofile", aliases=("submit", "submitpf"))
+    @commands.command(name="submit")
     async def submit_profile(self, ctx: commands.Context):
         droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=None)
 

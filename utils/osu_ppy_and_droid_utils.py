@@ -1,16 +1,16 @@
-import asyncio
+
 import datetime
 from typing import Union, List, Tuple, Dict
+from utils.database import TEWI_DB
 
 import aioosuapi
 import discord
 from discord.ext import commands
 from firebase_admin.firestore import firestore
 
-from helpers.osu.beatmaps.calculator import BumpedOsuPlay
+from helpers.osu.beatmaps.droid_oppadc import OsuDroidMap
 from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile, OsuDroidPlay
 from utils.const_responses import USER_NOT_BINDED, USER_NOT_FOUND
-from utils.database import BINDED_DOCUMENT, RECENT_CALC_DOCUMENT, USERS_DOCUMENT
 from utils.osuapi import OSU_PPY_API
 
 
@@ -56,16 +56,16 @@ async def default_search_for_uid_in_db_handling(ctx: commands.Context, uid: Unio
     if not uid:
         user_to_search_in_db = ctx.author
 
-        droid_user_id = (await get_droid_user_id_in_db(user_to_search_in_db))['uid']
+        droid_user_id = TEWI_DB.get_droid_uid_in_db(user_to_search_in_db).uid
 
         if not droid_user_id:
             await ctx.reply(USER_NOT_BINDED)
     else:
         if isinstance(user_to_search_in_db, discord.Member):
-            response_from_db = (await get_droid_user_id_in_db(user_to_search_in_db))
+            response_from_db = TEWI_DB.get_droid_uid_in_db(user_to_search_in_db)
 
-            if response_from_db['in_db']:
-                droid_user_id = response_from_db['uid']
+            if response_from_db.in_db:
+                droid_user_id = response_from_db.uid
             else:
                 await ctx.reply(USER_NOT_BINDED)
                 droid_user_id = None
@@ -73,29 +73,6 @@ async def default_search_for_uid_in_db_handling(ctx: commands.Context, uid: Unio
             droid_user_id = uid
 
     return droid_user_id
-
-
-async def get_droid_user_id_in_db(discord_user: discord.Member) -> dict[str, int, bool, None]:
-    """
-    :param discord_user: A discord user to get from the db
-    :return: The user's osu!droid uid
-    """
-
-    current_binded_users: dict = BINDED_DOCUMENT.get().to_dict()
-    user_in_db: bool = False
-    getted_user: Union[int, None] = None
-
-    def create_return_dict(getted_user_: Union[int, None], user_in_db_: bool):
-        return {
-            'uid': getted_user_,
-            'in_db': user_in_db_,
-        }
-
-    if f"{discord_user.id}" in current_binded_users:
-        user_in_db = True
-        getted_user = current_binded_users[str(discord_user.id)]
-
-    return create_return_dict(getted_user, user_in_db)
 
 
 def get_approved_str(approved_state_str: str) -> str:
@@ -108,7 +85,7 @@ def get_approved_str(approved_state_str: str) -> str:
 
 
 def get_default_beatmap_stats_string(
-        bumped_osu_play: BumpedOsuPlay, beatmap_data_from_api: aioosuapi.Beatmap = None
+        bumped_osu_play: OsuDroidMap, beatmap_data_from_api: aioosuapi.Beatmap = None
 ) -> str:
     extra_information: str = ""
 
@@ -134,12 +111,6 @@ def get_default_beatmap_stats_string(
     )
 
     return default_beatmap_stats_string
-
-
-async def clear_previous_calc_from_db_in_one_minute(ctx: Union[commands.Context, discord.Message]):
-    await asyncio.sleep(60)
-
-    RECENT_CALC_DOCUMENT.update({f"{ctx.channel.id}": firestore.DELETE_FIELD})
 
 
 async def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
@@ -169,7 +140,7 @@ async def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
         if new_user_play not in new_user_plays_info:
             new_user_plays_info.append(new_user_play)
 
-    old_users_data: dict = USERS_DOCUMENT.get().to_dict()
+    old_users_data: dict = TEWI_DB.get_users_document()
 
     old_user_plays: List[dict] = []
 
@@ -192,21 +163,4 @@ async def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
     user_plays.extend(new_user_plays_info)
     user_plays.extend(old_user_plays)
 
-    droid_user_uid: str = f"{osu_droid_user_.uid}"
-
-    USERS_DOCUMENT.set({droid_user_uid: {"user_plays": firestore.DELETE_FIELD}}, merge=True)
-
-    USERS_DOCUMENT.set(
-        {
-            droid_user_uid: {
-                "username": osu_droid_user_.username,
-                "rank_score": osu_droid_user_.rank_score,
-                "total_score": osu_droid_user_.total_score,
-                "accuracy": osu_droid_user_.accuracy,
-                "play_count": osu_droid_user_.play_count,
-                "avatar": osu_droid_user_.avatar,
-                "total_dpp": osu_droid_user_.total_dpp,
-                "user_plays": user_plays
-            }
-        }, merge=True
-    )
+    TEWI_DB.update_user_in_users_document(osu_droid_user_, user_plays)

@@ -6,12 +6,14 @@ import oppadc
 
 
 # Wrap everything like that seens like a reaallly bad iea but it should be fine for now ~~lmao~~
-class BumpedOsuPlay(oppadc.OsuMap):
+class OsuDroidMap(oppadc.OsuMap):
+
     # The super class call is missed on purpouse, it gets called in "setup"
-    def __init__(self, beatmap_id: Union[int, str], mods: str = "NM", misses: int = 0, accuracy: float = 100.00,
-                 achieved_combo: int = None, speed_multiplier: float = 1.00,
-                 adjust_to_droid: bool = False, beatmap_data_from_osu_api: aioosuapi.Beatmap = None,
-                 raw_str: Union[None, str] = None):
+    def __init__(
+        self, beatmap_id: Union[int, str], mods: str = "NM", misses: int = 0, accuracy: float = 100.00,
+        achieved_combo: int = None, speed_multiplier: float = 1.00,
+        beatmap_data_from_osu_api: aioosuapi.Beatmap = None, raw_str: Union[None, str] = None
+    ):
         """
         :param achieved_combo: the max_combo obtained on the play, defaults to beatmap max-combo
         :param accuracy: accuracy of the play
@@ -26,14 +28,11 @@ class BumpedOsuPlay(oppadc.OsuMap):
         self.base_mod_input: str = mods
 
         self._beatmap_data_from_osu_api: Union[aioosuapi.Beatmap, None] = beatmap_data_from_osu_api
-        self._adjust_to_droid: bool = adjust_to_droid
         self._beatmap_data: Union[str, None] = None
 
         self.beatmap_id: Union[str, int] = str(beatmap_id)
 
-        self.mods = mods.upper()
-        if self._adjust_to_droid:
-            self.mods: str = f"{self.mods}TD"
+        self.mods: str = f"{mods.upper()}TD"
 
         self.misses: int = misses
         self.accuracy: float = accuracy
@@ -61,10 +60,11 @@ class BumpedOsuPlay(oppadc.OsuMap):
         if self.raw_str:
             self.beatmap_osu = self.raw_str
             self._beatmap_data = self.beatmap_osu
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://osu.ppy.sh/osu/{self.beatmap_id}", allow_redirects=True) as res:
-                self.beatmap_osu: str = await res.text()
-                self._beatmap_data = self.beatmap_osu
+        else:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"https://osu.ppy.sh/osu/{self.beatmap_id}", allow_redirects=True) as res:
+                    self.beatmap_osu: str = await res.text()
+                    self._beatmap_data = self.beatmap_osu
 
         super().__init__(raw_str=self.beatmap_osu)
         self.original: oppadc.OsuMap = oppadc.OsuMap(raw_str=self.beatmap_osu)
@@ -75,8 +75,8 @@ class BumpedOsuPlay(oppadc.OsuMap):
         self._calculate_diff()
         if self.max_combo is None:
             self.max_combo = self.maxCombo()
-        if self._adjust_to_droid:
-            self._calculate_droid_stats()
+
+        self._calculate_droid_stats()
 
         self._calculate_br_dpp()
         self._dispose_beatmap_data_from_osu_api_diff_data()
@@ -123,23 +123,6 @@ class BumpedOsuPlay(oppadc.OsuMap):
         self.acc_pp = calculated_pp.acc_pp
         self.raw_pp = calculated_pp.total_pp
 
-        if True:
-            if self._adjust_to_droid:
-                self._base_speed_pp = self.speed_pp
-                self._base_aim_pp = self.aim_pp
-
-                self.speed_pp *= 0.6
-                self.aim_pp *= 0.8
-
-                """
-                if self.aim_pp <= self.raw_pp / 3 and self.speed_pp >= self.raw_pp / 1.6:
-                    self.speed_pp *= 0.6
-                elif self.aim_pp <= self.raw_pp / 2.5 and self.speed_pp >= self.raw_pp / 1.25:
-                    self.speed_pp *= 0.5
-                """
-
-                self.raw_pp -= ((self._base_speed_pp - self.speed_pp) + (self._base_aim_pp - self.aim_pp))
-
     def _dispose_beatmap_data_from_osu_api_diff_data(self):
         if self._beatmap_data_from_osu_api:
             self.total_length: int = int(float(self._beatmap_data_from_osu_api.total_length) / self.speed_multiplier)
@@ -150,14 +133,13 @@ class BumpedOsuPlay(oppadc.OsuMap):
                 self.total_length /= 0.75
 
 
-async def new_bumped_osu_play(
+async def new_osu_droid_map(
         beatmap_id, mods: str = "NM", misses: int = 0, accuracy: float = 100.00,
         max_combo: int = None, custom_speed: float = 1.00,
-        adjust_to_droid: bool = False,
         beatmap_data_from_osu_api: aioosuapi.Beatmap = None, raw_str: str = None
-) -> BumpedOsuPlay:
-    osu_droid_bumped_play: BumpedOsuPlay = BumpedOsuPlay(
-        beatmap_id, mods, misses, accuracy, max_combo, custom_speed, adjust_to_droid, beatmap_data_from_osu_api, raw_str
+) -> OsuDroidMap:
+    osu_droid_bumped_play: OsuDroidMap = OsuDroidMap(
+        beatmap_id, mods, misses, accuracy, max_combo, custom_speed, beatmap_data_from_osu_api, raw_str
     )
     await osu_droid_bumped_play.setup()
 

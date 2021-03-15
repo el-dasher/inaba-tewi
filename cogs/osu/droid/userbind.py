@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
-from utils.database import BINDED_DOCUMENT
+from utils.database import TEWI_DB
 from utils.osu_ppy_and_droid_utils import default_total_dpp, default_user_exists_check
 
 
@@ -20,8 +20,7 @@ class UserBind(commands.Cog):
         async with ctx.typing():
             if await default_user_exists_check(ctx, osu_droid_user_):
                 bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
-
-                BINDED_DOCUMENT.set({f"{member_to_bind.id}": osu_droid_user_.uid}, merge=True)
+                TEWI_DB.bind_user(member_to_bind, osu_droid_user_)
 
         return await ctx.reply(ctx.author.mention, embed=bind_embed)
 
@@ -58,7 +57,7 @@ class UserBind(commands.Cog):
 
         return bind_embed
 
-    @commands.command(name='userbind', aliases=('bindme', 'droidset', 'bind'))
+    @commands.command(name='userbind')
     async def user_bind(self, ctx: commands.Context, uid: int = None) -> discord.Message:
         if not uid:
             return await ctx.reply('❎ **| Você esqueceu do ID do seu perfil...**')
@@ -68,18 +67,18 @@ class UserBind(commands.Cog):
         return await self.bind_user(ctx=ctx, member_to_bind=ctx.author, osu_droid_user_=osu_droid_user)
 
     @commands.has_permissions(administrator=True)
-    @commands.command(name='forcebind', aliases=('bindhim', 'bindher', 'bindzir'))
-    async def force_user_bind(
+    @commands.command(name='userbind --admin')
+    async def force_bind(
             self, ctx: commands.Context, member: discord.Member = None, uid: int = None
     ) -> discord.Message:
-        if not member:
-            return await ctx.reply('❎ **| Ei adm, você esqueceu do usúario que você quer bindar!**')
-        if not uid:
-            return await ctx.reply('❎ **| Ei adm, você esqueceu do id desse usúario no jogo!**')
+        if member and uid:
+            osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(
+                uid, needs_player_html=True, needs_pp_data=True
+            )
 
-        osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(uid, needs_player_html=True, needs_pp_data=True)
-
-        return await self.bind_user(ctx, member_to_bind=member, osu_droid_user_=osu_droid_user, force_bind=True)
+            return await self.bind_user(ctx, member_to_bind=member, osu_droid_user_=osu_droid_user, force_bind=True)
+        else:
+            return await ctx.reply('❎ **| Ei adm, você esqueceu de alguns parâmetros ai em!**')
 
 
 def setup(bot):
