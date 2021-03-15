@@ -5,6 +5,7 @@ from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
 from aioosuapi import Beatmap
 from typing import Union
 import asyncio
+from typing import Dict
 
 from config.firebase.database import TEWI_DB as TEWI_DB_BASE
 
@@ -15,7 +16,27 @@ class UidInDBResponse:
         self.in_db: bool = in_db
 
 
-class TewiDB:
+class MainTewiDB:
+    def __init__(self):
+        # noinspection PyTypeChecker
+        self.MAIN_COLLECTION: firestore.CollectionReference = TEWI_DB_BASE.collection("MAIN")
+        self.CUSTOM_PREFIXES_DOCUMENT: firestore.DocumentReference = self.MAIN_COLLECTION.document("CUSTOM_PREFIXES")
+
+    def get_guild_custom_prefix(self, guild: discord.Guild) -> Union[str, None]:
+        curr_custom_prefixes: Dict[str, str] = self.CUSTOM_PREFIXES_DOCUMENT.get().to_dict()
+
+        try:
+            guild_custom_prefix: str = curr_custom_prefixes[str(guild.id)]
+        except KeyError:
+            return None
+        else:
+            return guild_custom_prefix
+
+    def post_new_custom_prefix(self, guild: discord.Guild, custom_prefix: str):
+        self.CUSTOM_PREFIXES_DOCUMENT.set({str(guild.id): custom_prefix}, merge=True)
+
+
+class OsuDroidTewiDB:
     def __init__(self):
         # noinspection PyTypeChecker
         self.OSU_DROID_COLLECTION: firestore.CollectionReference = TEWI_DB_BASE.collection('OSU!DROID')
@@ -92,4 +113,5 @@ class TewiDB:
         return create_response(got_user, user_in_db)
 
 
-TEWI_DB = TewiDB()
+OSU_DROID_TEWI_DB: OsuDroidTewiDB = OsuDroidTewiDB()
+MAIN_TEWI_DB: MainTewiDB = MainTewiDB()

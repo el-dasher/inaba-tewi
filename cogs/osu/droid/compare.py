@@ -7,7 +7,7 @@ from oppadc.osustats import OsuStats
 
 from helpers.osu.beatmaps.droid_oppadc import new_osu_droid_map, OsuDroidMap
 from utils.const_responses import BEATMAP_NOT_BEING_TALKED
-from utils.database import TEWI_DB
+from utils.database import OSU_DROID_TEWI_DB
 from utils.osu_ppy_and_droid_utils import (
     default_search_for_uid_in_db_handling,
     get_default_beatmap_stats_string,
@@ -42,8 +42,8 @@ class Compare(commands.Cog):
     @commands.command(name="compare", aliases=["c"])
     async def compare(self, ctx: commands.Context) -> Union[discord.Message, None]:
         async with ctx.typing():
-            current_recent_plays: dict = TEWI_DB.get_recent_plays()
-            current_users: dict = TEWI_DB.get_users_document()
+            current_recent_plays: dict = OSU_DROID_TEWI_DB.get_recent_plays()
+            current_users: dict = OSU_DROID_TEWI_DB.get_users_document()
 
             try:
                 play_to_compare_to = current_recent_plays[str(ctx.channel.id)]
@@ -124,7 +124,7 @@ class Compare(commands.Cog):
             )
 
         await ctx.reply(content=ctx.author.mention, embed=compare_embed)
-        await TEWI_DB.clear_previous_calc_from_db(ctx, 240)
+        await OSU_DROID_TEWI_DB.clear_previous_calc_from_db(ctx, 240)
 
 
 def setup(bot):

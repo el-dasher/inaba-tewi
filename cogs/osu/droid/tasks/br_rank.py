@@ -9,7 +9,7 @@ from discord.ext.commands import Cog
 from helpers.osu.beatmaps.droid_oppadc import OsuDroidMap, new_osu_droid_map
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
 from utils.bot_setup import DEBUG
-from utils.database import TEWI_DB
+from utils.database import OSU_DROID_TEWI_DB
 from utils.osuapi import OSU_PPY_API
 
 
@@ -35,7 +35,7 @@ class BRRank(commands.Cog):
 
         fetched_data: list = []
 
-        uid_list: list = TEWI_DB.get_br_uids()
+        uid_list: list = OSU_DROID_TEWI_DB.get_br_uids()
 
         for uid in uid_list:
 
@@ -107,7 +107,7 @@ class BRRank(commands.Cog):
         fetched_data.sort(key=lambda u: u['total_dpp'], reverse=True)
         top_players = fetched_data[:25]
 
-        TEWI_DB.set_new_br_droid_top_players(fetched_data)
+        OSU_DROID_TEWI_DB.set_new_br_droid_top_players(fetched_data)
 
         updated_data = discord.Embed(title="RANK DPP BR", timestamp=datetime.utcnow(), color=self.bot.user.color)
         updated_data.set_footer(text="Atualizado")

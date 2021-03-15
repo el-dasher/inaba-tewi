@@ -7,7 +7,7 @@ from discord.ext import commands
 from helpers.osu.beatmaps.droid_oppadc import OsuDroidMap, new_osu_droid_map
 from utils.bot_defaults import GenericEmbed
 from utils.const_responses import BEATMAP_NOT_BEING_TALKED
-from utils.database import TEWI_DB
+from utils.database import OSU_DROID_TEWI_DB
 from utils.osu_ppy_and_droid_utils import get_default_beatmap_stats_string
 from utils.osuapi import OSU_PPY_API
 
@@ -136,7 +136,7 @@ class MapCalc(commands.Cog):
             misses, accuracy, speed_multiplier, max_values_with_calc_acc
         )
 
-        await TEWI_DB.set_recent_play(ctx, calc_beatmap)
+        await OSU_DROID_TEWI_DB.set_recent_play(ctx, calc_beatmap)
         return calc_embed
 
     @commands.command(name="manualcalc", aliases=["prevcalc"])
@@ -146,7 +146,7 @@ class MapCalc(commands.Cog):
         args: List[Union[int, str], ...] = list(args)
 
         if ctx.invoked_with == "prevcalc":
-            previous_beatmaps = TEWI_DB.get_recent_plays()
+            previous_beatmaps = OSU_DROID_TEWI_DB.get_recent_plays()
 
             try:
                 previous_beatmap_id = previous_beatmaps[f"{ctx.channel.id}"]
@@ -162,7 +162,7 @@ class MapCalc(commands.Cog):
 
         if calc_embed:
             await ctx.reply(ctx.author.mention, embed=calc_embed)
-            await TEWI_DB.clear_previous_calc_from_db(ctx, 240)
+            await OSU_DROID_TEWI_DB.clear_previous_calc_from_db(ctx, 240)
 
     """
     @commands.Cog.listener()

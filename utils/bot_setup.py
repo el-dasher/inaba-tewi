@@ -17,7 +17,8 @@ _RAW_COGS: Tuple[str, ...] = (
     'osu.droid.tasks.br_rank',
     'osu.ppy.beatmap_search', 'osu.ppy.beatmap_calc',
     'handlers.error_handler',
-    'tools.avatar'
+    'tools.avatar',
+    'tools.guilds.prefix'
 )
 
 COGS: tuple = tuple(map(lambda cog_path: f'cogs.{cog_path}', _RAW_COGS))

@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidProfile
-from utils.database import TEWI_DB
+from utils.database import OSU_DROID_TEWI_DB
 from utils.osu_ppy_and_droid_utils import default_total_dpp, default_user_exists_check
 
 
@@ -20,7 +20,7 @@ class UserBind(commands.Cog):
         async with ctx.typing():
             if await default_user_exists_check(ctx, osu_droid_user_):
                 bind_embed: discord.Embed = self.new_bind_embed(member_to_bind, osu_droid_user_, force_bind)
-                TEWI_DB.bind_user(member_to_bind, osu_droid_user_)
+                OSU_DROID_TEWI_DB.bind_user(member_to_bind, osu_droid_user_)
 
         return await ctx.reply(ctx.author.mention, embed=bind_embed)
 

@@ -5,7 +5,7 @@ import oppadc
 from aioosuapi import Beatmap
 from discord.ext import commands
 from oppadc.osumap import OsuStats
-from utils.database import TEWI_DB
+from utils.database import OSU_DROID_TEWI_DB
 
 from helpers.osu.beatmaps.droid_oppadc import new_osu_droid_map, OsuDroidMap
 from helpers.osu.droid.user_data.osu_droid_data import new_osu_droid_profile, OsuDroidPlay, OsuDroidProfile
@@ -113,7 +113,7 @@ class Recent(commands.Cog):
             recent_embed.add_field(name=f"Infos do beatmap", value=info_beatmap_str, inline=False)
 
         await ctx.reply(content=ctx.author.mention, embed=recent_embed)
-        await TEWI_DB.set_recent_play(ctx, bumped_play)
+        await OSU_DROID_TEWI_DB.set_recent_play(ctx, recent_beatmap)
 
 
 def setup(bot):

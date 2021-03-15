@@ -1,7 +1,7 @@
 
 import datetime
 from typing import Union, List, Tuple, Dict
-from utils.database import TEWI_DB
+from utils.database import OSU_DROID_TEWI_DB
 
 import aioosuapi
 import discord
@@ -56,13 +56,13 @@ async def default_search_for_uid_in_db_handling(ctx: commands.Context, uid: Unio
     if not uid:
         user_to_search_in_db = ctx.author
 
-        droid_user_id = TEWI_DB.get_droid_uid_in_db(user_to_search_in_db).uid
+        droid_user_id = OSU_DROID_TEWI_DB.get_droid_uid_in_db(user_to_search_in_db).uid
 
         if not droid_user_id:
             await ctx.reply(USER_NOT_BINDED)
     else:
         if isinstance(user_to_search_in_db, discord.Member):
-            response_from_db = TEWI_DB.get_droid_uid_in_db(user_to_search_in_db)
+            response_from_db = OSU_DROID_TEWI_DB.get_droid_uid_in_db(user_to_search_in_db)
 
             if response_from_db.in_db:
                 droid_user_id = response_from_db.uid
@@ -140,7 +140,7 @@ async def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
         if new_user_play not in new_user_plays_info:
             new_user_plays_info.append(new_user_play)
 
-    old_users_data: dict = TEWI_DB.get_users_document()
+    old_users_data: dict = OSU_DROID_TEWI_DB.get_users_document()
 
     old_user_plays: List[dict] = []
 
@@ -163,4 +163,4 @@ async def submit_profile_to_db(osu_droid_user_: OsuDroidProfile):
     user_plays.extend(new_user_plays_info)
     user_plays.extend(old_user_plays)
 
-    TEWI_DB.update_user_in_users_document(osu_droid_user_, user_plays)
+    OSU_DROID_TEWI_DB.update_user_in_users_document(osu_droid_user_, user_plays)
