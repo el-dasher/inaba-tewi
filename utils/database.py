@@ -5,7 +5,7 @@ from helpers.osu.droid.user_data.osu_droid_data import OsuDroidProfile
 from aioosuapi import Beatmap
 from typing import Union
 import asyncio
-from typing import Dict
+from typing import Dict, List
 
 from config.firebase.database import TEWI_DB as TEWI_DB_BASE
 
@@ -83,7 +83,7 @@ class OsuDroidTewiDB:
     def get_br_uids(self):
         return self.BR_UIDS_DOCUMENT.get().to_dict()['0']
 
-    def set_new_br_droid_top_players(self, new_data: dict):
+    def set_new_br_droid_top_players(self, new_data: List[dict]):
         self.TOP_DROID_PLAYERS_DOCUMENT.set({'user': new_data})
 
     async def set_recent_play(self, ctx: commands.Context, recent_beatmap: Beatmap):
