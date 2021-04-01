@@ -28,8 +28,8 @@ class BRRank(commands.Cog):
             return None
 
         try:
-            br_rank_channel: discord.TextChannel = self.bot.get_channel(807887111788691477)
-            br_rank_message: discord.Message = await br_rank_channel.fetch_message(807909428828700712)
+            br_rank_channel: discord.TextChannel = self.bot.get_channel(826232339054067745)
+            br_rank_message: discord.Message = await br_rank_channel.fetch_message(827262984697937930)
         except AttributeError:
             return print("Os canais do rank de dpp provavelmente foram deletados!")
 
