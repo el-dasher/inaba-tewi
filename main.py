@@ -53,7 +53,11 @@ class InabaTewi(Bot):
                     return
                 else:
                     if msg.content.startswith(prefix) or got_custom_prefix and msg.content.startswith(got_custom_prefix):
-                        msg.content = msg.content.replace(got_custom_prefix, bot_setup.DEFAULT_BOT_PREFIXES[0])
+                        try:
+                            msg.content = msg.content.replace(got_custom_prefix, bot_setup.DEFAULT_BOT_PREFIXES[0])
+                        except TypeError:
+                            pass
+
                         return await self.process_commands(msg)
 
 
