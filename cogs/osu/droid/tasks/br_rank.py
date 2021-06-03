@@ -38,6 +38,7 @@ class BRRank(commands.Cog):
         uid_list: list = OSU_DROID_TEWI_DB.get_br_uids()
 
         for uid in uid_list:
+            print(uid)
 
             bpp_aim_list, bpp_speed_list, diff_ar_list = [], [], []
 
@@ -97,6 +98,8 @@ class BRRank(commands.Cog):
                         'aim': calculated[2],
                         'pp_data': top_plays
                     }
+                except ValueError as e:
+                    print(e)
                 except IndexError:
                     continue
                 else:
