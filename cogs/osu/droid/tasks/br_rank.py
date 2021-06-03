@@ -21,7 +21,7 @@ class BRRank(commands.Cog):
     async def on_ready(self):
         self.br_rank.start()
 
-    @tasks.loop(hours=1)
+    @tasks.loop(hours=2)
     async def br_rank(self):
 
         if DEBUG:
