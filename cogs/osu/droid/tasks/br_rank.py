@@ -58,11 +58,14 @@ class BRRank(commands.Cog):
                     if not osu_api_beatmap:
                         continue
                     else:
-                        beatmap_data: OsuDroidMap = await new_osu_droid_map(
-                            osu_api_beatmap.beatmap_id,
-                            mods=top_play['mods'], misses=top_play['miss'],
-                            accuracy=top_play['accuracy'], max_combo=top_play['combo'], custom_speed=1.00
-                        )
+                        try:
+                            beatmap_data: OsuDroidMap = await new_osu_droid_map(
+                                osu_api_beatmap.beatmap_id,
+                                mods=top_play['mods'], misses=top_play['miss'],
+                                accuracy=top_play['accuracy'], max_combo=top_play['combo'], custom_speed=1.00
+                            )
+                        except NotImplementedError:
+                            continue
 
                         bpp_aim_list.append(beatmap_data.aim_pp)
                         bpp_speed_list.append(beatmap_data.speed_pp)
