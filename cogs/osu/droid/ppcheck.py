@@ -103,7 +103,7 @@ class PPCheck(commands.Cog):
                     ctx, current_plays, osu_droid_user, ppcheck_page
                 )
 
-                return await ppcheck_msg.edit(embed=ppcheck_embed)
+                await ppcheck_msg.edit(embed=ppcheck_embed)
 
 
 def setup(bot):
