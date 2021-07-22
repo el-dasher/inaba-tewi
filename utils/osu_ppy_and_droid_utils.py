@@ -53,7 +53,7 @@ async def default_search_for_uid_in_db_handling(ctx: commands.Context, uid: Unio
 
     user_to_search_in_db: Union[discord.Member, int] = uid
 
-    if not uid or uid <= 50:
+    if not uid or type(uid) == int and uid <= 50:
         user_to_search_in_db = ctx.author
         droid_user_id = OSU_DROID_TEWI_DB.get_droid_uid_in_db(user_to_search_in_db).uid
 

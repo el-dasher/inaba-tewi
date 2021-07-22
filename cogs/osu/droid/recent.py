@@ -37,7 +37,7 @@ class Recent(commands.Cog):
 
             if optional_index:
                 index = optional_index
-            elif uid_or_index is not None and uid_or_index <= 50:
+            elif uid_or_index is not None and type(uid_or_index) == int and uid_or_index <= 50:
                 index = uid_or_index - 1
 
             recent_play: OsuDroidPlay = osu_droid_user.recent_plays[index]
