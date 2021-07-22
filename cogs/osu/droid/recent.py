@@ -25,17 +25,22 @@ class Recent(commands.Cog):
 
     @commands.command(name="recent", aliases=["rs", "recentme", "recenthe"])
     async def recent(
-            self, ctx: commands.Context, uid: Union[discord.Member, int] = None
+            self, ctx: commands.Context, uid_or_index: Union[discord.Member, int] = None, optional_index: int = None
     ) -> None:
         async with ctx.typing():
-            droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid)
-
+            index = 0
+            droid_user_id: Union[int, None] = await default_search_for_uid_in_db_handling(ctx=ctx, uid=uid_or_index)
             osu_droid_user: OsuDroidProfile = await new_osu_droid_profile(droid_user_id, needs_player_html=True)
 
             if not droid_user_id or not await default_user_exists_check(ctx, osu_droid_user):
                 return None
 
-            recent_play: OsuDroidPlay = osu_droid_user.recent_play
+            if optional_index:
+                index = optional_index
+            elif uid_or_index is not None and uid_or_index <= 50:
+                index = uid_or_index - 1
+
+            recent_play: OsuDroidPlay = osu_droid_user.recent_plays[index]
             recent_beatmap: Beatmap = (await OSU_PPY_API.get_beatmap(h=recent_play.hash))
             recent_embed: discord.Embed = discord.Embed(color=ctx.author.color, timestamp=recent_play.date)
 
